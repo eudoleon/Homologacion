@@ -12,26 +12,26 @@ mi_proyecto_odoo/
 ├── README.md                         # Documentación general del proyecto
 ├── .gitignore                        # Patrones de archivos excluidos del control de versiones
 │
-├── core/                             # Módulos base y localizaciones normativas
-│   ├── l10n_ve_fiscal/               # Localización fiscal (retenciones, libros IVA/ISLR)
-│   ├── l10n_ve_payroll/              # Localización de nómina y adaptaciones legales
-│   ├── base_company_extended/        # Extensión de datos corporativos base
-│   └── core_audit_trail/             # Módulo de auditoría y trazabilidad de cambios
+├── core/                             
+│   ├── l10n_ve_fiscal/               
+│   ├── l10n_ve_payroll/             
+│   ├── base_company_extended/       
+│   └── core_audit_trail/             
 │
 └── custom_addons/                    # Adicionales y desarrollos personalizados categorizados
-    ├── payroll/                      # Módulos funcionales de Nómina
-    │   ├── hr_payroll_custom_rules/  # Reglas salariales personalizadas
-    │   └── hr_payroll_reports/       # Reportes específicos de nómina
+    ├── payroll/                      
+    │   ├── hr_payroll_custom_rules/  
+    │   └── hr_payroll_reports/       
     │
-    ├── sales/                        # Módulos funcionales de Ventas
-    │   ├── sale_custom_approval/     # Flujo de aprobación de pedidos de venta
-    │   └── sale_discount_limit/      # Control y límites de descuento en cotizaciones
+    ├── sales/                        
+    │   ├── sale_custom_approval/     
+    │   └── sale_discount_limit/      
     │
-    ├── inventory/                    # Módulos funcionales de Inventario
-    │   └── stock_custom_barcode/     # Personalizaciones de código de barras para stock
+    ├── inventory/                    
+    │   └── stock_custom_barcode/     
     │
-    └── accounting/                   # Módulos funcionales de Contabilidad
-        └── account_custom_reports/   # Informes contables a medida
+    └── accounting/                   
+        └── account_custom_reports/   
 ```
 
 ---
@@ -46,30 +46,11 @@ mi_proyecto_odoo/
 ---
 
 ### Módulos `core/` (Localizaciones y Base)
-Contiene las soluciones normativas y transversales obligatorias:
-* **`l10n_ve_fiscal`**: Adaptación a la legislación tributaria (SENIAT, comprobantes de retención, numeración de control, libros fiscales).
-* **`l10n_ve_payroll`**: Adaptación a la legislación laboral (LOTTT, conceptos legales, utilidades, prestaciones).
-* **`base_company_extended`**: Ampliación de campos institucionales en el modelo `res.company`.
-* **`core_audit_trail`**: Registro de auditoría para rastrear creaciones, ediciones y eliminaciones críticas en el sistema.
-
+Contiene las soluciones normativas y transversales obligatorias
 ---
 
 ### Módulos `custom_addons/` (Desarrollos Personalizados por Área)
-Estructura modular agrupada por departamento funcional para garantizar mantenimiento eficiente y escalabilidad:
-
-* **`payroll/`** (Nómina)
-  * `hr_payroll_custom_rules`: Definición y cálculo de reglas salariales adicionales.
-  * `hr_payroll_reports`: Formatos de recibos de pago y reportes consolidados de nómina.
-
-* **`sales/`** (Ventas)
-  * `sale_custom_approval`: Matriz de aprobaciones jerárquicas en cotizaciones.
-  * `sale_discount_limit`: Validaciones para evitar exceder porcentajes de descuento autorizados.
-
-* **`inventory/`** (Inventario y Almacén)
-  * `stock_custom_barcode`: Adaptaciones para lecturas e impresión de etiquetas con código de barras en albaranes/recepciones.
-
-* **`accounting/`** (Contabilidad y Finanzas)
-  * `account_custom_reports`: Adaptación de estados financieros e informes contables internos.
+Estructura modular agrupada por departamento funcional para garantizar mantenimiento eficiente y escalabilidad
 
 ---
 
@@ -87,7 +68,7 @@ addons_path = core,custom_addons/payroll,custom_addons/sales,custom_addons/inven
 ## Guía de Inicio y Despliegue
 
 ### Requisitos Previos
-* **Odoo**: 19.0 (Community / Enterprise)
+* **Odoo**: 19.0 (Enterprise)
 * **Python**: 3.12+
 * **PostgreSQL**: 16+
 

@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_credit_note_motivo_confirm_account_invoice,access.credit.note.motivo.confirm.account.invoice,model_credit_note_motivo_confirm,account.group_account_invoice,1,1,1,0
+access_credit_note_motivo_confirm_account_manager,access.credit.note.motivo.confirm.account.manager,model_credit_note_motivo_confirm,account.group_account_manager,1,1,1,0

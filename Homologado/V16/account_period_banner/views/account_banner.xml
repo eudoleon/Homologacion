@@ -1,0 +1,14 @@
+<odoo>
+<data>
+<template id="web_banner" inherit_id="web.layout">
+        <xpath expr="//body" position="inside">
+            <div class="custom-banner" style="background-color: red; color: white; text-align: center; padding: 5px;">
+                ⚠ ADVERTENCIA: PERIODO ANTERIOR SIN CERRAR
+                Antes de iniciar un nuevo periodo, debe cerrarse correctamente el periodo anterior.
+                Por favor, revise y complete el cierre correspondiente para evitar inconsistencias en losregistros
+            </div>
+        </xpath>
+    </template>
+    
+</data>
+</odoo>

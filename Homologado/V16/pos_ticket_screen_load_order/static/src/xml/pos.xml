@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+<templates id="Order_details_template" inherit_id="point_of_sale.template" xml:space="preserve">
+
+     <t t-name="OrderDetails" t-inherit="point_of_sale.OrderDetails" t-inherit-mode="extension" owl="1">
+        <xpath expr="//div[hasclass('header-note')]" position="replace">
+            <!-- <div t-if="order.locked" class="header-note" t-att-class="{ highlight: props.highlightHeaderNote }">
+                Select the product(s) to refund and set the quantity
+            </div> -->
+        </xpath>
+    </t>
+
+    <t t-name="TicketScreen" t-inherit="point_of_sale.TicketScreen" t-inherit-mode="extension" owl="1">
+        <xpath expr="//div[hasclass('pads')]" position="replace">
+            <div t-if="isOrderSynced" class="pads">
+                <div class="control-buttons">
+                    <InvoiceButton order="_selectedSyncedOrder" />
+                    <ReprintReceiptButton order="_selectedSyncedOrder" />
+                </div>
+                <div class="subpads">
+                    <ActionpadWidget partner="getSelectedPartner()" actionName="constructor.numpadActionName" actionToTrigger="'do-refund'" isActionButtonHighlighted="getHasItemsToRefund()" />
+                    <NumpadWidget disabledModes="['price', 'discount']" activeMode="_selectedOrderlineId and 'quantity'" disableSign="true" />
+                </div>
+            </div>
+            
+            <div t-else="" class="border-top" >
+                <button class="button validation load-order-button w-100 btn btn-lg btn-primary rounded-0 fw-bolder py-3" t-on-click="() => this._setOrder(_selectedSyncedOrder)" style="padding: 4px 214px">
+                    <span class="fs-1 d-block">ABRIR PEDIDO</span>
+                </button>
+            </div>
+                
+        </xpath>
+    </t>
+
+</templates>

@@ -1,0 +1,57 @@
+<!-- <?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <template id="bi_report_picking" inherit_id="stock.report_picking">
+            <xpath expr="//div[@name='div_outgoing_address']" position="replace">
+                <div class="col-6">
+                    <div t-if="o.move_ids_without_package and o.move_ids_without_package[0].partner_id and o.move_ids_without_package[0].partner_id.id != o.partner_id.id">
+                        <span>
+                            <strong>Delivery Address:</strong>
+                        </span>
+                        <div t-field="o.move_ids_without_package[0].partner_id"
+                             t-options='{"widget": "contact", "fields": ["address", "name", "phone"], "no_marker": True, "phone_icons": True}'/>
+                    </div>
+                    <div t-if="o.picking_type_id.code != 'internal' and (not o.move_ids_without_package or not o.move_ids_without_package[0].partner_id) and o.picking_type_id.warehouse_id.partner_id">
+                        <span>
+                            <strong>Warehouse Address:</strong>
+                        </span>
+                        <div t-field="o.location_id.warehouse_id.partner_id"
+                             t-options='{"widget": "contact", "fields": ["address", "name", "phone"], "no_marker": True, "phone_icons": True}'/>
+                    </div>
+                </div>
+            </xpath>
+        </template>
+
+        <template id="bi_report_delivery_document" inherit_id="stock.report_delivery_document">
+            <xpath expr="//t[@t-set='address']" position="replace">
+                <div class="row">
+                    <div class="col-6">
+                        <div t-if="o.partner_id" name="partner_header">
+                            <span>
+                                <strong>Customer Address:</strong>
+                            </span>
+                            <div t-field="o.partner_id"
+                                 t-options='{"widget": "contact", "fields": ["address","name", "phone"], "no_marker": True, "phone_icons": True}'/>
+                            <p t-if="o.sudo().partner_id.vat">
+                                <t t-esc="o.company_id.country_id.vat_label or 'Tax ID'"/>
+                                :
+                                <span t-field="o.sudo().partner_id.vat"/>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-5 offset-1">
+                        <div t-if="o.picking_type_id.code != 'internal' and (not o.move_ids_without_package or not o.move_ids_without_package[0].partner_id) and o.picking_type_id.warehouse_id.partner_id">
+                            <span>
+                                <strong>Warehouse Address:</strong>
+                            </span>
+                            <div t-field="o.location_id.warehouse_id.partner_id"
+                                 t-options='{"widget": "contact", "fields": ["address", "name", "phone"], "no_marker": True, "phone_icons": True}'/>
+                        </div>
+                    </div>
+                </div>
+                <br/>
+            </xpath>
+        </template>
+    </data>
+</odoo>
+ -->

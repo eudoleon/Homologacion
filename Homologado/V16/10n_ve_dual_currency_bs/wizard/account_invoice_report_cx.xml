@@ -1,0 +1,74 @@
+<?xml version='1.0' encoding='utf-8'?>
+<odoo>
+    <data>
+
+        <record id="account_invoice_report_cx_wizard_view" model="ir.ui.view">
+            <field name="name">account.invoice.report.cx.wizard.form</field>
+            <field name="model">account.invoice.report.cx</field>
+            <field name="arch" type="xml">
+                <form string="Reporte de Cuentas por Cobrar">
+                    <field name="state" invisible="1"/>
+
+                    <!-- Filtros antes de generar -->
+                    <group attrs="{'invisible': [('state', '=', 'get')]}">
+                        <group>
+                            <field name="start_date"/>
+                            <field name="end_date"/>
+                        </group>
+                        <group>
+                            <field name="partner_id"/>
+                            <field name="user_id"/>
+                        </group>
+                        <group>
+                            <field name="due_range"/>
+                            <field name="report_format" readonly="1"/>
+                        </group>
+                    </group>
+
+                    <!-- Descarga después de generar -->
+                    <group attrs="{'invisible': [('state', '=', 'choose')]}">
+                        <group>
+                            <field name="invoice_data" invisible="1"/>
+                            <field name="file_name_pdf" filename="invoice_data"/>
+                        </group>
+                    </group>
+
+                    <footer>
+                        <button string="Generar Reporte PDF"
+                                name="action_generate_report"
+                                type="object"
+                                class="btn-primary"
+                                attrs="{'invisible': [('state', '=', 'get')]}"/>
+
+                        <button string="Cerrar"
+                                special="cancel"
+                                class="btn-secondary"
+                                attrs="{'invisible': [('state', '=', 'choose')]}"/>
+
+                        <button string="Cancelar"
+                                special="cancel"
+                                class="btn-secondary"
+                                attrs="{'invisible': [('state', '=', 'get')]}"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_report_cx" model="ir.actions.act_window">
+            <field name="name">Reporte Cuentas por Cobrar - Clientes</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">account.invoice.report.cx</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="account_invoice_report_cx_wizard_view"/>
+            <field name="target">new</field>
+        </record>
+
+        <menuitem 
+            id="menu_action_report_cx"
+            name="Reporte CXC Consolidado"
+            action="action_report_cx"
+            parent="dual_fiance_menu_categ"
+            sequence="80"/>
+
+    </data>
+</odoo>

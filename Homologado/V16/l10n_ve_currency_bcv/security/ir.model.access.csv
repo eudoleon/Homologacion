@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_days_bcv,access_days_bcv,model_days_bcv,base.group_user,1,1,1,1
+access_bank_holidays_bcv,access_bank_holidays_bcv,model_bank_holidays_bcv,base.group_user,1,1,1,1

@@ -1,0 +1,34 @@
+/* Copyright (c) 2016-Present Webkul Software Pvt. Ltd. (<https://webkul.com/>) */
+/* See LICENSE file for full copyright and licensing details. */
+/* License URL : <https://store.webkul.com/license.html/> */
+.wk_product_discount{    
+  
+    vertical-align: top;
+    display: inline-block;
+    font-size: 11px;
+    margin: 8px !important;
+    width: 122px;
+    height: 115px;
+    background: #fff;
+    border: 1px solid #e2e2e2;
+    border-radius: 3px;
+    overflow: hidden;
+    cursor: pointer;
+}
+.remove_discount{
+    background-color: #017e84;
+    color: white !important;
+}
+.discount_percent{
+    font-size: 34px;
+    margin-top: 22px;
+}
+
+.fa-scissors {
+        position:absolute;
+        left:2px;
+        top:-1px;
+}
+.fa-scissors:before {
+        font-size:12px;
+}

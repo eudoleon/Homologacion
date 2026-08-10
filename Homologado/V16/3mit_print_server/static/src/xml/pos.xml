@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="ReceiptScreen" t-inherit="point_of_sale.ReceiptScreen" t-inherit-mode="extension" owl="1">
+
+        <!-- 🔹 Mensaje modificado -->
+        <xpath expr="//div[hasclass('actions')]/h1" position="replace">
+            <h1>HAGA CLIC EN IMPRIMIR PARA CONTINUAR CON UN NUEVO PEDIDO</h1>
+        </xpath>
+
+        <!-- 🔹 Ocultar recibo -->
+        <xpath expr="//div[hasclass('pos-receipt-container')]" position="attributes">
+            <attribute name="style">display: none;</attribute>
+        </xpath>
+
+        <!-- 🔹 Eliminar sección de email -->
+        <xpath expr="//form[hasclass('send-email')]" position="replace"/>
+
+        <!-- 🔹 Eliminar notificaciones -->
+        <xpath expr="//div[hasclass('notice')]" position="replace"/>
+
+        <!-- 🔹 Botón Next Order con clases específicas para el control JS -->
+        <xpath expr="//div[hasclass('buttons')]" position="replace">
+            <div class="buttons">
+                <!-- Botón deshabilitado inicialmente (controlado por JS) -->
+                <div class="button next validation" style="opacity: 0; pointer-events: none;">
+                    <i class="fa fa-arrow-right"></i> Nuevo Pedido
+                </div>
+                
+                <!-- Botón de impresión fiscal -->
+                <div class="button print" t-on-click="printNewButtonFiscal">
+                    <i class="fa fa-print"></i> Imprimir
+                </div>
+                
+            </div>
+        </xpath>
+        
+    </t>
+    <t t-inherit="point_of_sale.TicketScreen" t-inherit-mode="extension" owl="1">
+        <xpath expr="//div[@t-if='!shouldHideDeleteButton(order)']" position="replace">
+            <div t-if="!shouldHideDeleteButton(order) &amp;&amp; !order.impresa" 
+                class="col very-narrow delete-button" 
+                name="delete" 
+                t-on-click.stop="() => this.trigger('delete-order', order)">
+                <i class="fa fa-trash" aria-hidden="true"/>
+                <t t-if="env.isMobile"> Delete</t>
+            </div>
+        </xpath>
+    </t>
+</templates>

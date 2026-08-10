@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_pos_payment_method_form_cashea" model="ir.ui.view">
+        <field name="name">pos.payment.method.form.cashea</field>
+        <field name="model">pos.payment.method</field>
+        <field name="inherit_id" ref="point_of_sale.pos_payment_method_view_form"/>
+        <field name="arch" type="xml">
+            <field name="journal_id" position="attributes">
+                <attribute name="required">0</attribute>
+            </field>
+            <field name="journal_id" position="after">
+                <field name="is_cashea"/>
+            </field>
+        </field>
+    </record>
+</odoo>

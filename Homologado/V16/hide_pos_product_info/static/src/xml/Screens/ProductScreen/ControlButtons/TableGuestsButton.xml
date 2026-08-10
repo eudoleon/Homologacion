@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<t t-name="TableGuestsButton" t-inherit="pos_restaurant.TableGuestsButton" t-inherit-mode="extension" owl="1">
+    <xpath expr="//div[contains(@class, 'control-button')]" position="attributes">
+        <attribute name="style">display: none !important;</attribute>
+    </xpath>
+</t>

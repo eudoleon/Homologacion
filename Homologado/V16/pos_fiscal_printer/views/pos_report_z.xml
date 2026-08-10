@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- vista formulario de pos.report.z -->
+    <record id="pos_report_z_view_form" model="ir.ui.view">
+        <field name="name">pos.report.z.view.form</field>
+        <field name="model">pos.report.z</field>
+        <field name="arch" type="xml">
+            <form string="Reporte Z">
+                <header>
+                    <button name="action_done" string="Validar" type="object" class="oe_highlight" attrs="{'invisible': [('state', '!=', 'draft')]}"/>
+                    <!-- <button name="action_draft" string="Pasar a Borrador" type="object" class="oe_highlight" attrs="{'invisible': [('state', '!=', 'done')]}"/> -->
+                    <field name="state" widget="statusbar" statusbar_visible="draft,done"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="number" />
+                            <!-- <field name="serial_fiscal_pos" /> -->
+                            <!-- <field name="x_fiscal_printer_code"/> -->
+                            <!-- <field name="connection_type" invisible="1"/> -->
+                            <field name="date"/>
+                            <field name="pos_session_ids" widget="many2many_tags"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                        <!-- <group string="Totales en Z impreso">
+                            <field name="total_exempt" string="Total Exento"
+                                attrs="{'readonly': [('state', '=', 'done')]}"/>
+                            <field name="total_base_iva_16" string="Total Base Imponible"
+                                attrs="{'readonly': [('state', '=', 'done')]}"/>
+                            <field name="total_iva_16" string="Total IVA"
+                                attrs="{'readonly': [('state', '=', 'done')]}"/>
+                            <field name="total_exempt_nc" string="Total Exento NC"
+                                attrs="{'readonly': [('state', '=', 'done')]}"/>
+                            <field name="total_base_iva_16_nc" string="Total Base Imponible NC"
+                                attrs="{'readonly': [('state', '=', 'done')]}"/>
+                            <field name="total_iva_16_nc" string="Total IVA NC"
+                                attrs="{'readonly': [('state', '=', 'done')]}"/>
+                            <field name="ticket_fiscal_desde" string="Factura Inicial"
+                                attrs="{'readonly': [('state', '=', 'done')]}"/>
+                            <field name="ticket_fiscal_hasta" string="Factura Final"
+                                attrs="{'readonly': [('state', '=', 'done')]}"/>
+                        </group> -->
+
+                    </group>
+                    
+                    <notebook>
+                        <!-- Nueva Pestaña para Tickets Fiscales -->
+                        <page string="Facturas Fiscales">
+                            <field name="ticket_fiscal_ids" widget="many2many_tags" options="{'no_create': True}"/>
+                            <group>
+                                <field string="Factura Inicial" name="ticket_fiscal_desde" readonly="1"/>
+                                <field string="Factura Final" name="ticket_fiscal_hasta" readonly="1"/>
+                            </group>
+                        </page>
+                        <page string="Detalle de ventas POS">
+                            <field name="pos_order_ids" nolabel="1" readonly="1" force_save="1"/>
+                            <group>
+                                <field name="total_exempt_pos"/>
+                                <field name="total_base_iva_16_pos"/>
+                                <field name="total_iva_16_pos"/>
+                                <field name="total_exempt_pos_nc"/>
+                                <field name="total_base_iva_16_pos_nc"/>
+                                <field name="total_iva_16_pos_nc"/>
+                                <!-- Nuevos campos para 8% y 31% en POS -->
+                                <field name="total_base_iva_8_pos"/>
+                                <field name="total_iva_8_pos"/>
+                                <field name="total_base_iva_31_pos"/>
+                                <field name="total_iva_31_pos"/>
+                                <!-- Nuevos campos para 8% y 31% NC en POS -->
+                                <field name="total_base_iva_8_pos_nc"/>
+                                <field name="total_iva_8_pos_nc"/>
+                                <field name="total_base_iva_31_pos_nc"/>
+                                <field name="total_iva_31_pos_nc"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" widget="mail_followers" />
+                    <field name="activity_ids" widget="mail_activity" />
+                    <field name="message_ids" widget="mail_thread" />
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- vista lista de pos.report.z -->
+    <record id="pos_report_z_view_tree" model="ir.ui.view">
+        <field name="name">pos.report.z.view.tree</field>
+        <field name="model">pos.report.z</field>
+        <field name="arch" type="xml">
+            <tree string="Reportes Z">
+                <field name="number"/>
+                <field name="date"/>
+                <field name="total_exempt" string="Total Exento"/>
+                <field name="total_base_iva_16" string="Total Base Imponible 16%"/>
+                <field name="total_iva_16" string="Total IVA 16%"/>
+                <!-- Nuevos campos para 8% y 31% en POS -->
+                <field name="total_base_iva_8_pos"/>
+                <field name="total_iva_8_pos"/>
+                <field name="total_base_iva_31_pos"/>
+                <field name="total_iva_31_pos"/>
+                <!-- Nuevos campos para 8% y 31% NC en POS -->
+                <field name="total_base_iva_8_pos_nc"/>
+                <field name="total_iva_8_pos_nc"/>
+                <field name="total_base_iva_31_pos_nc"/>
+                <field name="total_iva_31_pos_nc"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <field name="state"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- accion para pos.report.z -->
+    <record id="pos_report_z_action" model="ir.actions.act_window">
+        <field name="name">Reportes Z</field>
+        <field name="res_model">pos.report.z</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_id" ref="pos_report_z_view_tree"/>
+    </record>
+
+    <!-- regla multi compañia para pos.report.z -->
+    <record id="pos_report_z_rule" model="ir.rule">
+        <field name="name">pos.report.z rule</field>
+        <field name="model_id" ref="model_pos_report_z"/>
+        <field name="global" eval="True"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+
+    <!-- menu para pos.report.z -->
+    <menuitem id="pos_report_z_menu" name="Reportes Z" parent="point_of_sale.menu_point_root" action="pos_report_z_action"/>
+
+</odoo>

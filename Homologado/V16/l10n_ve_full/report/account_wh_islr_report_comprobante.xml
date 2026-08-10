@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <template id="template_wh_islr">
+            <t t-call="web.html_container">
+                <t t-foreach="data" t-as="d">
+                <div class="article">
+                    <style>
+                        .vat-header-table, .vat-info-table, .vat-summary-table, .vat-main-table {
+                            width: 100%;
+                            border-collapse: collapse;
+                            font-size: 11px;
+                        }
+                        .vat-header-table td,
+                        .vat-info-table td,
+                        .vat-info-table th,
+                        .vat-summary-table th,
+                        .vat-summary-table td,
+                        .vat-main-table th,
+                        .vat-main-table td {
+                            border: 1px solid #c2c2c2;
+                            padding: 7px 6px;
+                            text-align: center;
+                            vertical-align: middle;
+                            font-family: 'Arial', sans-serif;
+                        }
+                        .vat-header-table {
+                            margin-bottom: 0.2em;
+                        }
+                        .vat-header-title {
+                            font-size: 20px;
+                            font-weight: bold;
+                            color: #383838;
+                            letter-spacing: 1px;
+                            text-align: left;
+                        }
+                        .vat-header-law {
+                            font-size: 10px;
+                            color: #777;
+                            text-align: left;
+                        }
+                        .vat-info-table th {
+                            background: #f4f4f4;
+                            font-weight: bold;
+                            font-size: 11px;
+                            border-bottom: 2px solid #888;
+                        }
+                        .vat-info-table td {
+                            text-align: left;
+                            background: #fff;
+                        }
+                        .vat-summary-table th {
+                            background: #e6e8eb;
+                            font-weight: bold;
+                        }
+                        .vat-summary-table td {
+                            background: #fcfcfc;
+                        }
+                        .vat-main-table th {
+                            background: #ddeaf7;
+                            color: #252525;
+                            font-size: 11px;
+                            font-weight: bold;
+                            border-bottom: 2px solid #707070;
+                        }
+                        .vat-main-table td {
+                            background: #fff;
+                            font-size: 10.5px;
+                        }
+                        .vat-main-table tfoot td {
+                            font-weight: bold;
+                            background: #e9f0f6;
+                            border-top: 2px solid #585858;
+                            font-size: 11px;
+                        }
+                        .vat-sign-section td {
+                            border: none !important;
+                            text-align: center;
+                            padding-top: 28px;
+                            font-size: 12px;
+                        }
+                        .vat-sign-section img {
+                            margin-bottom: 6px;
+                        }
+                        hr {
+                            border: 1px solid #b0b0b0;
+                            width: 55%;
+                            margin-left: auto;
+                            margin-right: auto;
+                            margin-top: 10px;
+                            margin-bottom: 0px;
+                        }
+                    </style>
+
+                    <!-- HEADER -->
+                    <table class="vat-header-table">
+                        <tr>
+                            <td style="width:20%;">
+                                <img t-att-src="image_data_uri(d.company_id.logo)" style="width:180px; height:85px;"/>
+                            </td>
+                            <td style="width:35%;">
+                                <div class="vat-header-title">
+                                    Comprobante de Retención de ISLR
+                                </div>
+                            </td>
+                            <td style="width:45%;">
+                                <div class="vat-header-law">
+                                    LEY DE ISLR – ART. 31: "Los agentes de retención están obligados a retener el impuesto establecido en esta Ley cuando paguen o acrediten sumas gravables..."
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <!-- DATOS BÁSICOS -->
+                    <table class="vat-info-table" style="margin-bottom:4px;">
+                        <tr>
+                            <th colspan="2">Providencia Administrativa N° SNAT/2015/0049 del 10/08/2015</th>
+                            <td colspan="2" style="text-align:right; border:none;">
+                                <strong>Nro. Comprobante:</strong>
+                                <span t-esc="d.number"/>
+                            </td>
+                            <td colspan="2" style="text-align:right; border:none;">
+                                <strong>Fecha de Retención:</strong>
+                                <span t-esc="date_ret"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2"><strong>Agente de Retención:</strong></td>
+                            <td colspan="2"><strong>RIF Agente de Retención:</strong></td>
+                            <td colspan="2"><strong>Período Fiscal:</strong></td>
+                        </tr>
+                        <tr>
+                            <td colspan="2"><span t-esc="d.company_id.partner_id.name"/></td>
+                            <td colspan="2"><span t-esc="d.company_id.partner_id.rif"/></td>
+                            <td colspan="2"><span t-esc="period"/></td>
+                        </tr>
+                        <tr>
+                            <td colspan="6"><strong>Dirección Fiscal del Agente de Retención:</strong></td>
+                        </tr>
+                        <tr>
+                            <td colspan="6"><span t-esc="model.get_direction(d.company_id.partner_id)"/></td>
+                        </tr>
+                        <tr>
+                            <td colspan="2"><strong>Agente Retenido:</strong></td>
+                            <td colspan="4"><strong>RIF Agente Retenido:</strong></td>
+                        </tr>
+                        <tr>
+                            <td colspan="2"><span t-esc="d.partner_id.name"/></td>
+                            <td colspan="4"><span t-esc="d.partner_id.rif"/></td>
+                        </tr>
+                        <tr>
+                            <td colspan="6"><strong>Dirección Fiscal del Agente Retenido:</strong></td>
+                        </tr>
+                        <tr>
+                            <td colspan="6"><span t-esc="model.get_direction(d.partner_id)"/></td>
+                        </tr>
+                    </table>
+
+                    <!-- TABLA PRINCIPAL -->
+                    <table class="vat-main-table">
+                        <thead>
+                            <tr>
+                                <th>Fecha<br/>Factura</th>
+                                <th>N°<br/>Factura</th>
+                                <th>N°<br/>Control</th>
+                                <th>Concepto de<br/>Retención</th>
+                                <th>%<br/>Retención</th>
+                                <th>Monto Total<br/>del Documento</th>
+                                <th>Base</th>
+                                <th>Sustraendo</th>
+                                <th>ISLR Monto<br/>Retenido</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="d.concept_ids" t-as="inv">
+                                <td><span t-field="inv.invoice_id.invoice_date" t-options='{"format": "dd/MM/yyyy"}'/></td>
+                                <td><span t-esc="model._get_supplier_invoice_number(inv)"/></td>
+                                <td><span t-esc="model._get_nro_ctrl(inv)"/></td>
+                                <td><span t-esc="model._get_islr_wh_concept(inv)"/></td>
+                                <td><span t-esc="'{:,.2f}'.format(model._get_islr_wh_retencion_islr(inv)).replace(',', '@').replace('.', ',').replace('@', '.')"/></td>
+                                <td><span t-esc="'{:,.2f}'.format(total_doc).replace(',', '@').replace('.', ',').replace('@', '.')"/></td>
+                                <td><span t-esc="'{:,.2f}'.format(model._get_islr_wh_doc_invoices_base(inv)).replace(',', '@').replace('.', ',').replace('@', '.')"/></td>
+                                <td><span t-esc="'{:,.2f}'.format(model._get_islr_wh_doc_invoice_subtract(inv)).replace(',', '@').replace('.', ',').replace('@', '.')"/></td>
+                                <td><span t-esc="'{:,.2f}'.format(model._get_islr_invoice_amount_ret(inv)).replace(',', '@').replace('.', ',').replace('@', '.')"/></td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="8" style="text-align:right;">Total Impuesto Retenido:</td>
+                                <td><b><span t-esc="'{:,.2f}'.format(d.amount_total_ret).replace(',', '@').replace('.', ',').replace('@', '.')"/></b></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+
+                    <!-- FIRMAS -->
+                    <table class="vat-sign-section" style="width:100%;margin-top:20px;">
+                        <tr>
+                            <td style="width:50%;">
+                                <img t-attf-src="data:image/*;base64,{{d.company_id.firma_representante}}" style="width:180px; height:90px;" />
+                                <hr/>
+                                <b><span t-if="d.company_id.representante_legal" t-esc="d.company_id.representante_legal"/></b>
+                                <br/>
+                                <b>Agente de Retención (Sello y Firma)</b>
+                            </td>
+                            <td style="width:50%;">
+                                <img class="img Firma_falta" src="/l10n_ve_full/static/src/img/Firma_falta.png" style="width:180px; height:90px;"/>
+                                <hr/>
+                                <b><span t-esc="d.partner_id.name"/></b>
+                                <br/>
+                                <b>Firma del Beneficiario</b>
+                            </td>
+                        </tr>
+                    </table>
+
+                </div>
+                </t>
+            </t>
+        </template>
+
+        <record id="paperformat_withholding_islr_report" model="report.paperformat">
+            <field name="name">Report ISLR</field>
+            <field name="orientation">Landscape</field>
+            <field name="header_line" eval="False"/>
+            <field name="margin_top">10</field>
+            <field name="margin_right">5</field>
+            <field name="margin_bottom">2</field>
+            <field name="margin_left">5</field>
+            <field name="header_line" eval="False"/>
+            <field name="header_spacing">0</field>
+            <field name="dpi">0</field>
+        </record>
+
+        <record id="action_withholdong_islr_report" model="ir.actions.report">
+            <field name="name">Comprobante de ISLR</field>
+            <field name="model">account.wh.islr.doc</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">l10n_ve_full.template_wh_islr</field>
+            <field name="report_file">l10n_ve_full.template_wh_islr</field>
+            <field name="paperformat_id" ref="l10n_ve_full.paperformat_withholding_islr_report"/>
+            <field name="binding_model_id" ref="model_account_wh_islr_doc"/>
+            <field name="binding_type">report</field>
+        </record>
+
+    </data>
+</odoo>

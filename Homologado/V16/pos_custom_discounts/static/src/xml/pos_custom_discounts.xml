@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright (c) 2016-Present Webkul Software Pvt. Ltd. (<https://webkul.com/>) -->
+<!-- See LICENSE file for full copyright and licensing details. -->
+<!-- License URL : <https://store.webkul.com/license.html/> -->
+<templates id="template" xml:space="preserve">
+	<t t-name="WkDiscountPopup" owl="1">
+		<div class="modal-dialog" id="sunny-test">
+			<div class="popup popup-textinput" style="height:400px !important">
+				<div class="title" style="height:3% !important;margin-bottom:0px;">
+					<div>
+						<p style="position: absolute;height: 27px;width: 354px;margin-top: -8px;margin-left:10%">
+							<t t-esc=" props.title || 'Listado de Descuentos' " />
+						</p>
+						<t t-if="env.pos.config.allow_custom_discount">
+							<div class="button customize" t-on-click="click_customize" style="position: absolute;margin-left: 321px;height: 41px;margin-top: -16px;width:150px;">
+								<i class="fa fa-tags"></i> Descuento Personalizado
+							</div>
+						</t>
+					</div>
+				</div>
+				<div style="height:71%;overflow-y: scroll;">
+					<div class="wk_popup_body">
+						<t t-if="!env.pos.db.all_discounts.length">
+							<div style="margin:12%">
+								No hay ningún descuento disponible para la sesión POS actual, agregue el descuento desde la configuración.
+							</div>
+						</t>
+						<t t-foreach="env.pos.db.all_discounts" t-as="item" t-key="item.id">
+							<span class='wk_product_discount' t-on-click="click_wk_product_discount" t-att-id="item.id" >
+								<div class="discount_percent" t-att-id="item.id">
+									<t t-if="item.discount_percent%1!=0">
+										<t t-esc="env.pos.format_currency_no_symbol(item.discount_percent)"/>%
+									</t>
+									<t t-if="item.discount_percent%1==0">
+										<t  t-esc="item.discount_percent "/>%
+									</t>
+								</div> 	
+								<div style="margin-top: 9px;height: 15px;width: 118px;">
+								<t t-esc="item.name"/>
+								</div>
+							</span>  
+						</t>
+					</div>
+				</div>
+
+				<div id="discount_error" style="background:#ffa566;height:22px;display:none" >
+					   <span style="color:brown"><i class="fa fa-exclamation-triangle" aria-hidden="true"></i >   Por favor Seleccione un Descuento</span>
+				</div>
+				<div class="footer">
+					<div class="button cancel" t-on-click="cancel">
+						Cancelar
+					</div>
+					<div class="button apply" t-on-click="click_apply">
+						Línea Seleccionada
+					</div>
+					<div class="button apply_complete_order" t-on-click="click_apply_complete_order">
+						 Todo el Pedido
+					</div>
+					<t t-if="props.selected_list_discount or (env.pos.get_order().get_selected_orderline().discount >0)">
+						<div class="button remove_discount remove_def_discount" style="padding-left: 5px; padding-right: 5px;" t-on-click="click_remove_discount">
+							Remover Descuentos
+						</div>
+					</t>
+		   		</div>
+			</div>
+		</div>	  
+	</t>
+
+	<t t-name="WebkulErrorPopup" owl="1">
+		<div class="modal-dialog">
+			<div class="popup popup-textinput">
+				<p class="title"><t t-esc="props.title || '' " /></p>
+				<p class="body"><t t-esc="props.body || '' " /></p>
+				<div class="footer">
+					<div class="button" id="password_ok_button" t-on-click="click_password_ok_button">
+						OK 
+					</div>
+				</div>
+			</div>
+		</div>
+	</t>
+
+	<t t-name="WkCustomDiscountPopup" owl="1">
+		<div class="modal-dialog" id="sunny-test">
+			<div class="popup popup-textinput" style="height:350px !important">
+				<p class="title"><t t-esc=" props.title || 'Customize Discount' " /></p>
+				<div class="body" style="height: 190px;">
+					<table class='receipt-total'>
+						<tr>
+							<th>Descuento</th>
+							<td>
+								<input id="discount" style="width: 118px;margin-left: -145px;padding-bottom: -17px;" type="number" name="discount"/>%
+							</td>
+						</tr>
+						<tr>
+							<th>Razón</th>
+							<td>
+								<textarea  id="reason" style="margin-left:20px; margin-top:4px;" rows="4" cols="26" name="custom_discount_reason"></textarea>
+							</td>
+						</tr>						
+					</table>
+					<div id="error_div" style="background:#ffa566;height:20px;padding:10px;display:none" >
+					   <span id="customize_error" style="color:brown"></span>
+					</div>
+				</div>
+				<div class="footer">					
+					<div class="button custom_cancel" t-on-click="cancel">
+						Cancelar
+					</div>
+					<div class="button current_product" t-on-click="click_current_product">
+						Línea Seleccionada
+					</div>
+					<div class="button whole_order" t-on-click="click_whole_order">
+						Toda el Pedido
+					</div>
+					<t t-if="props.custom_discount">
+						<div class="button remove_discount" style="padding-left: 5px; padding-right: 5px;" t-on-click="click_remove_discount">
+							Remover Descuento
+						</div>
+					</t>
+		   		</div>
+			</div>
+		</div>
+	</t>
+
+	<t t-name="Orderline" t-inherit="point_of_sale.Orderline" t-inherit-mode="extension" owl="1">
+        <xpath expr="//ul[hasclass('info-list')]//li[hasclass('info')]" position="inside">
+			<div id='custom_discount_reason' style='font-weight:bold;'>
+				<t t-if="props.line.get_custom_discount_reason()">
+					<t t-esc="props.line.get_custom_discount_reason()"/>
+				</t>
+			</div>
+        </xpath>
+    </t>
+
+	<t t-name="WrappedProductNameLines" t-inherit="point_of_sale.WrappedProductNameLines" t-inherit-mode="extension" owl="1">
+		<xpath expr="span" position="inside">
+            <t t-if="props.line.custom_discount_reason!=''">
+				<div class="pos-receipt-left-padding">
+					<i><t t-esc="props.line.custom_discount_reason" /></i>
+				</div>
+			</t>
+		</xpath>
+    </t>
+</templates>

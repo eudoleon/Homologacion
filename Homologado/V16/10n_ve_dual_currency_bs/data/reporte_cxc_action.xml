@@ -1,0 +1,10 @@
+<odoo>
+    <record id="action_report_cxc_pdf" model="ir.actions.report">
+        <field name="name">Reporte Cuentas por Cobrar</field>
+        <field name="model">account.invoice.report.cxc</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">10n_ve_dual_currency_bs.report_cxc_template</field>
+        <field name="report_file">10n_ve_dual_currency_bs.report_cxc_template</field>
+        <field name="binding_type">report</field>
+    </record>
+</odoo>

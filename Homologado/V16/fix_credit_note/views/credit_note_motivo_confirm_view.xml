@@ -1,0 +1,23 @@
+<odoo>
+    <record id="view_credit_note_motivo_confirm_form" model="ir.ui.view">
+        <field name="name">credit.note.motivo.confirm.form</field>
+        <field name="model">credit.note.motivo.confirm</field>
+        <field name="arch" type="xml">
+            <form string="Advertencia de Motivos de NC">
+                <sheet>
+                    <div style="margin-bottom: 18px; font-size: 17px; text-align:center; width:100%;">
+                        <b>Ya existen Notas de Crédito asociadas a esta factura con los siguientes motivos:</b><br></br>
+                    </div>
+                    <div style="margin: 0 auto; width: 100%;">
+                        <field name="credit_notes" readonly="1" nolabel="1" style="font-size: 14px; color: #b94a48;"/>
+                        <!-- <field name="motivo_list" readonly="1" nolabel="1" style="font-size: 14px; color: #b94a48;"/> -->
+                    </div>
+                </sheet>
+                <footer>
+                    <button name="action_confirm" type="object" string="Continuar" class="btn-primary"/>
+                    <button string="Cancelar" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

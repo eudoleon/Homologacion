@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Acción Planificada para Sincronizar Tasas de Retenciones -->
+        <record id="ir_cron_sync_withholding_currency_rates" model="ir.cron">
+            <field name="name">Sincronizar Tasas de Retenciones con Facturas</field>
+            <field name="model_id" ref="account.model_account_move"/>
+            <field name="state">code</field>
+            <field name="code">model.cron_sync_withholding_currency_rates()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <field name="numbercall">-1</field>
+            <field name="active" eval="False"/>
+            <field name="doall" eval="False"/>
+            <field name="user_id" ref="base.user_admin"/>
+            <field name="priority">10</field>
+        </record>
+    </data>
+</odoo>

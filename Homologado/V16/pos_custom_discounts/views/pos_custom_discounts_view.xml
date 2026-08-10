@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright (c) 2016-Present Webkul Software Pvt. Ltd. (<https://webkul.com/>) -->
+<!-- See LICENSE file for full copyright and licensing details. -->
+<!-- License URL : <https://store.webkul.com/license.html/> -->
+<odoo>
+	<data>
+		<record id="pos_custom_dicount_inherit_pos_form_inherit" model="ir.ui.view">
+			<field name="name">pos.order</field>
+			<field name="model">pos.order</field>
+			<field name="inherit_id" ref="point_of_sale.view_pos_pos_form"/>
+			<field name="arch" type="xml">
+				<xpath expr="//field[@name='price_subtotal_incl']" position="after">	
+ 					<field name='custom_discount_reason'/>
+ 				</xpath>
+			</field>
+		</record>
+
+		<record id="pos_discount_form_view" model="ir.ui.view">
+			<field name="name">pos.custom.discount</field>
+			<field name="model">pos.custom.discount</field>
+			<field name="type">form</field>
+			<field name="arch" type="xml">
+				<form string="form session">
+					<sheet>	
+						<group>
+							<field name="name" id="name" placeholder="Discount Name"/>
+							<field style="width:50%" name='discount_percent'/>
+						</group>
+						<group>
+							<field name="available_in_pos" widget="many2many_tags"/>
+							<field name="description" id="discription" placeholder="Description for Internal Purpose"/>
+						</group>	
+					</sheet>
+				</form>
+			</field>
+		</record>
+
+		<record id="pos_discount_tree_view" model="ir.ui.view">
+			<field name="name">pos.custom.discount</field>
+			<field name="model">pos.custom.discount</field>
+			<field name="type">tree</field>
+			<field name="arch" type="xml">
+				<tree string="tree session">
+					<field name="name"/>
+					<field name="discount_percent"/>
+					<field name="description"/>
+				</tree>
+			</field>
+		</record>
+
+		<record id="pos_discount_form_view_action" model="ir.actions.act_window">
+			<field name="name">POS Custom Discount</field>
+			<field name="res_model">pos.custom.discount</field>
+			<field name="view_mode">tree,form</field>
+		</record>
+
+		<menuitem id="wk_pos_discount_menu" name="POS Discount" parent="point_of_sale.menu_point_config_product" action="pos_discount_form_view_action"/>
+	</data>
+</odoo>

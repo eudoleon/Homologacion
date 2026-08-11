@@ -1,3 +1,0 @@
-invoice_payments_widget
-aplicar_igtf_divisa
-mount_igtf

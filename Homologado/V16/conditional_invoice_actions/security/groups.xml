@@ -1,9 +1,0 @@
-<odoo>
-    <data noupdate="1">
-        <record id="group_enable_action_button" model="res.groups">
-            <field name="name">Habilitar botón de acciones</field>
-            <!-- Puedes asignar la categoría que prefieras, por ejemplo "Accounting": -->
-            <field name="category_id" ref="base.module_category_accounting"/>
-        </record>
-    </data>
-</odoo>

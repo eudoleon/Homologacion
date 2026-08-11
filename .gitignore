@@ -1,0 +1,70 @@
+# =====================================================================
+# Python / Odoo
+# =====================================================================
+
+# Bytecode compilado
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribuciones / empaquetado
+*.egg-info/
+*.egg
+dist/
+build/
+*.whl
+*.tar.gz
+
+# Entornos virtuales
+venv/
+.venv/
+env/
+.env/
+ENV/
+
+# Odoo
+*.log
+filestore/
+/.local/
+odoo.sqlite
+odoo-session.conf
+
+# =====================================================================
+# IDE / Editores
+# =====================================================================
+
+# VS Code (ajusta según necesites conservar settings/launch compartidos)
+.vscode/*
+!.vscode/launch.json
+!.vscode/settings.json
+!.vscode/extensions.json
+
+# JetBrains (PyCharm, IntelliJ)
+.idea/
+*.iml
+
+# =====================================================================
+# Sistema operativo
+# =====================================================================
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+*.lnk
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# =====================================================================
+# Archivos temporales / de respaldo
+# =====================================================================
+
+*.swp
+*.swo
+*~
+*.bak
+*.tmp
+.~lock.*

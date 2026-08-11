@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+
+        <!-- Vista Tree propia para product.template.attribute.value -->
+        <record id="product_template_attribute_value_dual_currency_tree" model="ir.ui.view">
+            <field name="name">product_template_attribute_value_tree.dual_currency</field>
+            <field name="model">product.template.attribute.value</field>
+            <field name="priority" eval="1"/>
+            <field name="arch" type="xml">
+                <list string="Attribute Values" editable="bottom">
+                    <field name="attribute_id" readonly="1"/>
+                    <field name="name" readonly="1"/>
+                    <field name="price_extra_usd" sum="Total $" optional="show"/>
+                    <field name="price_extra" sum="Total" optional="show"/>
+                    <field name="currency_id_dif" column_invisible="1"/>
+                </list>
+            </field>
+        </record>
+
+        <!-- Vista Form propia para product.template.attribute.value -->
+        <record id="product_template_attribute_value_dual_currency_form" model="ir.ui.view">
+            <field name="name">product_template_attribute_value_form.dual_currency</field>
+            <field name="model">product.template.attribute.value</field>
+            <field name="priority" eval="1"/>
+            <field name="arch" type="xml">
+                <form string="Attribute Value">
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="attribute_id"/>
+                                <field name="name"/>
+                            </group>
+                            <group>
+                                <field name="price_extra"/>
+                                <field name="price_extra_usd"/>
+                                <field name="currency_id_dif" invisible="1"/>
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+    </data>
+</odoo>

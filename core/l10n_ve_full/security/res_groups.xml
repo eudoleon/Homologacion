@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="group_localizacion" model="res.groups">
+            <field name="name">Localizacion</field>
+            <field name="comment">modulos permanecientes a la localizacion venezolana</field>
+        </record>
+
+        <record id="group_allow_delete_out_invoice" model="res.groups">
+            <field name="name">Permitir eliminar facturas de Clientes</field>
+        </record>
+
+        <record id="group_allow_delete_in_invoice" model="res.groups">
+            <field name="name">Permitir eliminar facturas de Proveedores</field>
+        </record>
+
+        <record id="group_allow_delete_entry" model="res.groups">
+            <field name="name">Permitir eliminar Asientos Contables</field>
+        </record>
+    </data>
+</odoo>

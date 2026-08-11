@@ -1,0 +1,82 @@
+<odoo>
+    <record id="purchase_order_form_inherit_create_invoice" model="ir.ui.view">
+        <field name="name">purchase.order.form.inherit.create.invoice</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.purchase_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="action_create_invoice"
+                    string="Crear factura"
+                    type="object"
+                    class="oe_highlight"
+                    invisible="state not in ('purchase','done')"/>
+            </xpath>
+        </field>
+    </record>
+    <record id="view_purchase_order_form_inherit_tasa" model="ir.ui.view">
+        <field name="name">purchase.order.form.inherit.tasa</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.purchase_order_form"/>
+        <field name="arch" type="xml">
+            
+            <xpath expr="//div[@name='date_planned_div']" position="after">
+                <field name="tasa_bcv" 
+                readonly="1" 
+                force_save="1" 
+                style="font-weight: bold;"/>
+            </xpath>
+            
+        </field>
+    </record>
+    <record id="view_purchase_order_form_inherit_ref_totals" model="ir.ui.view">
+        <field name="name">purchase.order.form.inherit.ref.totals</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.purchase_order_form"/>
+        <field name="arch" type="xml">
+            
+            <xpath expr="//field[@name='tax_totals']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+            <xpath expr="//field[@name='tax_totals']" position="after">
+                <div class="d-flex justify-content-end align-items-start w-100" style="gap: 40px; color: white !important;">
+                    
+                    <div style="min-width: 220px;">
+                        <group class="oe_subtotal_footer" style="margin: 0 !important; border-top: none !important; width: 100%;">
+                            <field name="currency_id_ref" invisible="1"/>
+                            
+                            <field name="amount_ref_untaxed" 
+                                   widget="monetary" 
+                                   options="{'currency_field': 'currency_id_ref'}"
+                                   style="color: white !important; font-weight: bold; border-top: none !important;"/>
+                            
+                            <field name="amount_ref_tax" 
+                                   widget="monetary" 
+                                   options="{'currency_field': 'currency_id_ref'}"
+                                   style="color: white !important; border-top: none !important;"/>
+                            
+                            <div class="oe_inline o_td_label" style="border-top: none !important;">
+                                <label for="amount_ref_total" style="font-weight: bold; color: white !important;"/>
+                            </div>
+                            <field name="amount_ref_total" 
+                                   nolabel="1" 
+                                   widget="monetary" 
+                                   options="{'currency_field': 'currency_id_ref'}"
+                                   style="color: white !important; font-weight: bold; border-top: none !important;"/>
+                        </group>
+                    </div>
+
+                    <div style="min-width: 280px; color: white !important;">
+                        <field name="tax_totals" 
+                               widget="account-tax-totals-field" 
+                               nolabel="1" 
+                               invisible="0" 
+                               style="color: white !important; border-top: none !important;"/>
+                    </div>
+                    
+                </div>
+            </xpath>
+            
+        </field>
+    </record>
+</odoo>

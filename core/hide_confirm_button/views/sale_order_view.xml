@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+  <data>
+    <!--
+      Odoo 19:
+      Evitamos reemplazar el <header> completo porque es fragil ante cambios de vista base.
+      En su lugar, ocultamos puntualmente los botones de confirmacion.
+
+      Legacy v17 conservado (comportamiento anterior):
+      - sale_order_form_custom_header (replace completo de //form/header)
+      - purchase_order_form_custom_header (replace completo de //form/header)
+    -->
+
+    <record id="sale_order_hide_confirm_buttons_v19" model="ir.ui.view">
+      <field name="name">sale.order.hide.confirm.buttons.v19</field>
+      <field name="model">sale.order</field>
+      <field name="inherit_id" ref="sale.view_order_form"/>
+      <field name="arch" type="xml">
+        <!-- Oculta cualquier boton de confirmar en pedidos de venta -->
+        <xpath expr="//button[@name='action_confirm']" position="attributes">
+          <attribute name="invisible">1</attribute>
+        </xpath>
+      </field>
+    </record>
+
+    <record id="purchase_order_hide_confirm_buttons_v19" model="ir.ui.view">
+      <field name="name">purchase.order.hide.confirm.buttons.v19</field>
+      <field name="model">purchase.order</field>
+      <field name="inherit_id" ref="purchase.purchase_order_form"/>
+      <field name="arch" type="xml">
+        <!-- Conserva el alcance funcional que tenia el archivo original en compras -->
+        <xpath expr="//button[@name='button_confirm']" position="attributes">
+          <attribute name="invisible">1</attribute>
+        </xpath>
+      </field>
+    </record>
+  </data>
+</odoo>

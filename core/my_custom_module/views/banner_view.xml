@@ -1,0 +1,9 @@
+<odoo>
+    <template id="custom_neutralize_banner" inherit_id="web.layout" name="Neutralize Banner">
+        <xpath expr="//span[@id='oe_neutralize_banner']" position="replace">
+            <span id="oe_neutralize_banner" t-attf-style="text-align: center; color: #FFFFFF; background-color: #D0442C; position: relative; display: block; font-size: 16px;">
+                <t t-out="neutralize_banner_text">El sistema esta en mantenimiento. Por favor, espere...</t>
+            </span>
+        </xpath>
+    </template>
+</odoo>

@@ -1,0 +1,53 @@
+<odoo>
+    <record id="view_order_form_inherit_ref_totals" model="ir.ui.view">
+        <field name="name">sale.order.form.inherit.ref.totals</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            
+            <xpath expr="//field[@name='tax_totals']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+            <xpath expr="//field[@name='tax_totals']" position="after">
+                <div class="d-flex justify-content-end align-items-start w-100" style="gap: 40px;">
+                    
+                    <div style="min-width: 180px;">
+                        <group class="oe_subtotal_footer" style="margin: 0 !important; border-top: none !important; width: 100%;">
+                            <field name="currency_id_ref" invisible="1"/>
+                            
+                            <field name="amount_ref_untaxed" 
+                                   widget="monetary" 
+                                   options="{'currency_field': 'currency_id_ref'}"
+                                   style="font-weight: bold; border-top: none !important;"/>
+                            
+                            <field name="amount_ref_tax" 
+                                   widget="monetary" 
+                                   options="{'currency_field': 'currency_id_ref'}"
+                                   style="border-top: none !important;"/>
+                            
+                            <div class="oe_inline o_td_label" style="border-top: none !important;">
+                                <label for="amount_ref_total" style="font-weight: bold;"/>
+                            </div>
+                            <field name="amount_ref_total" 
+                                   nolabel="1" 
+                                   widget="monetary" 
+                                   options="{'currency_field': 'currency_id_ref'}"
+                                   style="font-weight: bold; border-top: none !important;"/>
+                        </group>
+                    </div>
+
+                    <div style="min-width: 280px;">
+                        <field name="tax_totals" 
+                               widget="account-tax-totals-field" 
+                               nolabel="1" 
+                               invisible="0" 
+                               style="border-top: none !important;"/>
+                    </div>
+                    
+                </div>
+            </xpath>
+            
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+  <data>
+    <!--
+      Legacy v17 conservado y comentado para referencia futura.
+      Esta herencia del wizard no se carga en Odoo 19 (ver __manifest__.py).
+
+      <record id="sale_order_line_discount_wizard_form_inherit" model="ir.ui.view">
+        <field name="name">sale.order.line.discount.wizard.form.inherit</field>
+        <field name="model">sale.order.discount</field>
+        <field name="inherit_id" ref="sale.sale_order_line_wizard_form"/>
+        <field name="arch" type="xml">
+          <xpath expr="//div[@class='row']" position="replace">
+          </xpath>
+        </field>
+      </record>
+    -->
+  </data>
+</odoo>

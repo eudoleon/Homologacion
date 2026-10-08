@@ -1,0 +1,305 @@
+/* pos.css - mai_pos_dual_currency */
+
+/* Ajuste de cuadrícula de productos para que las tarjetas tengan suficiente ancho para el precio dual */
+.pos .product-list.d-grid:not(.category-list),
+.pos .product-list:not(.category-list) {
+    grid-template-columns: repeat(auto-fill, minmax(175px, 1fr)) !important;
+    gap: 0.75rem !important;
+}
+
+/* Ajuste de cuadrícula de categorías para que nombres largos como 'Hamburguesas' no se recorten */
+.pos .category-list.d-grid {
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)) !important;
+    gap: 0.5rem !important;
+}
+
+/* Espacio y ancho mínimo en la tarjeta para el badge de precio */
+.pos article.product,
+.pos .product-card {
+    min-width: 175px !important;
+    padding-bottom: 24px !important;
+    height: auto !important;
+}
+
+/* Badge de precio dual en la parte inferior de la tarjeta */
+.pos .product .currency-bottom-badge {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 5;
+    color: #155724;
+    background: linear-gradient(135deg, #d4edda, #affcd6);
+    padding: 3px 4px;
+    border-radius: 0 0 8px 8px;
+    font-weight: bold;
+    font-size: 0.69rem;
+    line-height: 1.2;
+    white-space: nowrap;
+    text-align: center;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+}
+
+/* Reposicionar el badge de cantidad a la esquina superior derecha para evitar tapar el título o el precio */
+.pos .product .product-cart-qty,
+.pos article .product-cart-qty,
+.pos article .cart-qty,
+.pos article .badge-cart-qty,
+.pos article .badge,
+.pos article span[class*='qty'],
+.pos article div[class*='qty'],
+.pos .product-card .badge,
+.pos .product-card [class*='qty'],
+.pos .product-card .product-cart-qty {
+    top: 4px !important;
+    bottom: auto !important;
+    right: 4px !important;
+    z-index: 15 !important;
+}
+
+/* Ocultar botón de Precio en el numpad sin romper la cuadrícula */
+.numpad button.numpad-button[value="Precio"],
+.numpad button.numpad-button[value="Price"] {
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
+
+/* =========================================================
+   Product Configurator Popup (Extras / Variantes)
+   ========================================================= */
+
+/* Modal title styling */
+.modal-dialog .modal-title {
+    font-size: 1.15rem !important;
+    font-weight: 700 !important;
+    color: #1e293b !important;
+}
+
+/* Grid layout for attribute values so they are well spaced and organized */
+.modal-dialog .configurator_radio > .d-flex.flex-wrap,
+.modal-dialog .d-flex.gap-2.flex-wrap {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)) !important;
+    gap: 0.65rem !important;
+    width: 100% !important;
+}
+
+.modal-dialog .attribute-name-cell,
+.modal-dialog .d-flex.gap-2.flex-wrap > div {
+    width: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+.modal-dialog .attribute-name-cell label,
+.modal-dialog .d-flex.gap-2.flex-wrap label {
+    width: 100% !important;
+    height: 100% !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    min-height: 52px !important;
+    padding: 0.55rem 0.85rem !important;
+    border-radius: 8px !important;
+    box-sizing: border-box !important;
+    transition: all 0.15s ease-in-out !important;
+    text-align: left !important;
+    gap: 8px !important;
+}
+
+.modal-dialog .attribute-name-cell label > span,
+.modal-dialog .d-flex.gap-2.flex-wrap label > span {
+    font-size: 0.92rem !important;
+    font-weight: 600 !important;
+    line-height: 1.25 !important;
+    flex: 1 1 auto !important;
+}
+
+.modal-dialog .price-extra-cell {
+    margin-left: auto !important;
+    flex-shrink: 0 !important;
+}
+
+.modal-dialog .price_extra {
+    font-size: 0.74rem !important;
+    font-weight: 700 !important;
+    padding: 0.25rem 0.55rem !important;
+    border-radius: 6px !important;
+    background: #f1f5f9 !important;
+    color: #1e293b !important;
+    border: 1px solid #cbd5e1 !important;
+    white-space: nowrap !important;
+    display: inline-block !important;
+    line-height: 1.2 !important;
+}
+
+/* Active state for selected attribute values */
+.modal-dialog label.active .price_extra {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    border-color: #ffffff !important;
+}
+
+/* Ocultar pestaña de Mesas y pantalla de Pisos (Modo Mostrador / Fast Food) */
+.pos .table-button,
+.pos button.table-button,
+.pos .navbar button.table-button,
+.pos .floor-screen,
+.pos .floor-map {
+    display: none !important;
+}
+
+/* Evitar desbordamientos y barras horizontales indeseadas en el navbar */
+.pos .pos-topheader {
+    overflow: hidden !important;
+}
+
+.pos .pos-leftheader,
+.pos-topheader .pos-leftheader {
+    overflow: visible !important;
+    flex-grow: 1 !important;
+    width: auto !important;
+    max-width: none !important;
+}
+
+.pos .pos-leftheader > div {
+    width: auto !important;
+    max-width: 100% !important;
+    overflow: visible !important;
+    display: flex !important;
+    align-items: center !important;
+    flex-wrap: nowrap !important;
+}
+
+/* ==========================================================================
+   BADGE DE TASA DEL DÍA (DUAL CURRENCY PILL)
+   ========================================================================== */
+.pos .currency-rate-info,
+.pos .pos-topheader .currency-rate-info,
+.pos header .currency-rate-info,
+div.currency-rate-info {
+    background: #27272a !important;
+    border: 1px solid rgba(255, 138, 0, 0.45) !important;
+    border-radius: 9999px !important;
+    padding: 4px 12px !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35) !important;
+    color: #ffffff !important;
+    font-size: 0.88rem !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.2px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+    transition: all 0.2s ease !important;
+}
+
+.pos .currency-rate-info:hover {
+    border-color: #FF8A00 !important;
+    box-shadow: 0 0 12px rgba(255, 138, 0, 0.3) !important;
+}
+
+.pos .currency-rate-info .rate-icon,
+.pos .currency-rate-info i {
+    color: #FF8A00 !important;
+    font-size: 0.92rem !important;
+    margin-right: 5px !important;
+}
+
+.pos .currency-rate-info .rate-label,
+.pos .currency-rate-info span:not(.rate-value):not(:last-child) {
+    color: #e4e4e7 !important;
+    font-weight: 600 !important;
+    font-size: 0.85rem !important;
+}
+
+.pos .currency-rate-info .rate-value,
+.pos .currency-rate-info span:last-child {
+    color: #FFB800 !important;
+    font-weight: 800 !important;
+    font-size: 0.92rem !important;
+    text-shadow: 0 0 8px rgba(255, 184, 0, 0.35) !important;
+}
+
+/* ==========================================================================
+   ADAPTABILIDAD Y NITIDEZ DE IMÁGENES DE PRODUCTO (SIN HUECOS BLANCOS)
+   ========================================================================== */
+.pos article.product .product-img,
+.pos .product-card .product-img {
+    height: 120px !important;
+    width: 100% !important;
+    position: relative !important;
+    overflow: hidden !important;
+    background: #ffffff !important;
+    border-radius: 13px 13px 0 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0 !important;
+}
+
+/* Anular el pseudo-elemento ::before de Bootstrap .ratio que forzaba 75% de altura fija y vacíos */
+.pos article.product .product-img.ratio::before,
+.pos .product-card .product-img.ratio::before {
+    display: none !important;
+    padding-top: 0 !important;
+}
+
+.pos article.product .product-img img,
+.pos .product-card .product-img img,
+.pos article.product img.object-fit-cover,
+.pos .product-card img.object-fit-cover,
+.pos .product-img img {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    object-fit: cover !important;
+    object-position: center !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background-color: #ffffff !important;
+    transition: transform 0.22s ease-in-out !important;
+}
+
+.pos article.product:hover .product-img img,
+.pos .product-card:hover .product-img img {
+    transform: scale(1.04) !important;
+}
+
+/* Contenedor de contenido del producto: compacto y centrado verticalmente */
+.pos article.product .product-content,
+.pos .product-card .product-content {
+    height: auto !important;
+    min-height: 40px !important;
+    max-height: 58px !important;
+    flex: 1 1 auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+    padding: 3px 6px !important;
+    margin: 0 !important;
+}
+
+.pos article.product .product-name,
+.pos .product-card .product-name {
+    font-weight: 700 !important;
+    color: #18181b !important;
+    font-size: 0.86rem !important;
+    line-height: 1.2 !important;
+    text-align: center !important;
+    padding: 2px 4px !important;
+    margin: 0 !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 2 !important;
+    -webkit-box-orient: vertical !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+
+
+

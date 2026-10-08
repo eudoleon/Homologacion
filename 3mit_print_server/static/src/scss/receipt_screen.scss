@@ -1,0 +1,216 @@
+/* Ocultar botón de Precio en el teclado numérico (Numpad) del POS */
+button[data-mode="price"],
+button[value="Precio"],
+button[value="Price"],
+button[value="price"],
+button[data-value="price"],
+button[name="price"],
+.numpad button[data-mode="price"],
+.numpad button[value="Precio"],
+.numpad button[value="Price"],
+.numpad button[value="price"],
+.numpad button.mode-button[data-mode="price"],
+.numpad button.mode-button.price,
+.numpad .mode-button[data-mode="price"],
+.numpad button.price,
+.numpad-button[value="Precio"],
+.numpad-button[value="Price"],
+button.numpad-button[value="Precio"],
+button.numpad-button[value="Price"],
+.numpad button.mode-button:nth-child(12),
+.numpad-grid button:nth-child(12),
+.pads .numpad button:nth-child(12) {
+    visibility: hidden !important;
+    pointer-events: none !important;
+    opacity: 0 !important;
+}
+
+/* Estilos de botones de acción fiscal y nuevo pedido en POS */
+.mit-action-button,
+.mit-fiscal-print,
+.mit-receipt-new-order,
+.fiscal-print,
+button.fiscal-print,
+div.fiscal-print,
+.btn-switchpane.fiscal-print,
+.receipt-screen .mit-action-button {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0.6rem !important;
+    border-radius: 12px !important;
+    box-sizing: border-box !important;
+    min-height: 48px !important;
+    padding: 0.8rem 1.4rem !important;
+    font-weight: 700 !important;
+    font-size: 1.05rem !important;
+    letter-spacing: 0.3px !important;
+    cursor: pointer !important;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.16) !important;
+    text-decoration: none !important;
+    line-height: 1.2 !important;
+}
+
+.mit-action-button i,
+.mit-fiscal-print i,
+.fiscal-print i {
+    font-size: 1.15rem !important;
+}
+
+.mit-action-button:hover,
+.mit-fiscal-print:hover,
+.fiscal-print:hover {
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.2) !important;
+    transform: translateY(-2px) !important;
+}
+
+.mit-action-button:active,
+.mit-fiscal-print:active,
+.fiscal-print:active {
+    transform: translateY(0) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Botón de Impresión Fiscal (Verde Esmeralda Gradiente) */
+.mit-action-button--fiscal,
+.mit-fiscal-print,
+.fiscal-print,
+button.fiscal-print,
+div.fiscal-print {
+    background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%) !important;
+    color: #ffffff !important;
+    border: 1px solid #0f766e !important;
+}
+
+.mit-action-button--fiscal:hover,
+.mit-fiscal-print:hover,
+.fiscal-print:hover {
+    background: linear-gradient(135deg, #0f766e 0%, #0d9488 100%) !important;
+    color: #ffffff !important;
+    box-shadow: 0 6px 20px rgba(13, 148, 136, 0.4) !important;
+}
+
+/* Botón de Impresión de Comanda / Orden de Cocina (Azul Océano Gradiente) */
+.mit-action-button--kitchen,
+.mit-kitchen-print {
+    background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%) !important;
+    color: #ffffff !important;
+    border: 1px solid #0369a1 !important;
+}
+
+.mit-action-button--kitchen:hover,
+.mit-kitchen-print:hover {
+    background: linear-gradient(135deg, #0369a1 0%, #0284c7 100%) !important;
+    color: #ffffff !important;
+    box-shadow: 0 6px 20px rgba(2, 132, 199, 0.4) !important;
+}
+
+/* Botón de Nuevo Pedido (Azul Real Gradiente) */
+.mit-action-button--next,
+.mit-receipt-new-order {
+    background: linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%) !important;
+    color: #ffffff !important;
+    border: 1px solid #1e40af !important;
+}
+
+.mit-action-button--next:hover,
+.mit-receipt-new-order:hover {
+    background: linear-gradient(135deg, #1e40af 0%, #1d4ed8 100%) !important;
+    color: #ffffff !important;
+    box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4) !important;
+}
+
+.mit-action-button.is-hidden,
+.mit-fiscal-print.is-hidden,
+.mit-receipt-new-order.is-hidden {
+    display: none !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
+/* Ocultar boton de Editar Pago y botón de Imprimir Recibo Completo en la pantalla de recibo */
+.pos .bg-success-light button,
+.pos .bg-success-light .btn,
+.pos .bg-success button,
+.pos .bg-success .btn,
+.pos .payment-status-container button,
+.pos .payment-status-container .btn,
+.pos .payment-success button,
+.pos .payment-success .btn,
+.pos-receipt-title button,
+span.edit-order-payment,
+.edit-order-payment,
+span[class*="edit-order-payment"],
+.receipt-screen .edit-order-payment,
+.pos .edit-order-payment,
+span[t-on-click*="orderDetails"],
+.pos .receipt-screen .btn-secondary,
+.receipt-screen .actions .button:not(.mit-action-button):not(.mit-fiscal-print),
+.receipt-screen .actions button:not(.mit-action-button):not(.mit-fiscal-print),
+.receipt-screen .default-view .button:not(.mit-action-button):not(.mit-fiscal-print),
+.receipt-screen .default-view button:not(.mit-action-button):not(.mit-fiscal-print),
+.receipt-screen .buttons .button:not(.mit-action-button):not(.mit-fiscal-print),
+.receipt-screen .buttons button:not(.mit-action-button):not(.mit-fiscal-print),
+.pos .receipt-screen button:not(.mit-action-button):not(.mit-fiscal-print),
+.pos .receipt-screen .button:not(.mit-action-button):not(.mit-fiscal-print),
+.receipt-screen .button.print,
+.receipt-screen button.print,
+.receipt-screen div.print,
+.receipt-screen .btn-print,
+.receipt-screen .print-receipt,
+.receipt-screen .button-print,
+.pos .button.print,
+.pos button.print,
+.pos div.print,
+.pos .btn-print,
+.pos .print-receipt,
+.pos .button-print,
+button.print,
+div.print,
+.button.print,
+.btn-print,
+.print-receipt,
+.button-print,
+div[class*="print"]:not(.mit-fiscal-print):not(.fiscal-print):not(.mit-kitchen-print):not(.mit-action-button--kitchen),
+button[class*="print"]:not(.mit-fiscal-print):not(.fiscal-print):not(.mit-kitchen-print):not(.mit-action-button--kitchen) {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    height: 0 !important;
+    min-height: 0 !important;
+    max-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+}
+
+/* Ocultar completamente la vista previa del recibo / ticket impreso y la columna derecha en POS */
+.pos-receipt-container,
+.pos-receipt,
+.order-receipt,
+.pos-receipt-print,
+.pos-receipt-preview,
+.receipt-container,
+.receipt-content,
+.o_pos_receipt,
+.o_receipt_preview,
+.pos-receipt-view,
+.pos-receipt-wrapper,
+.receipt-screen .pos-receipt-container,
+.receipt-screen .pos-receipt,
+.pos .pos-receipt-container,
+.pos .pos-receipt,
+.pos .order-receipt,
+.receipt-screen .default-view > div:nth-child(2),
+.receipt-screen .screen-content > div:nth-child(2),
+.pos .default-view > div:nth-child(2),
+.pos-receipt-screen .default-view > div:nth-child(2),
+div[class*="pos-receipt"] {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    width: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
+}

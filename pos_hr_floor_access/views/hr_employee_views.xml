@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_employee_form_inherit_pos_floor_access" model="ir.ui.view">
+        <name>hr.employee.form.inherit.pos.floor.access</name>
+        <model>hr.employee</model>
+        <inherit_id ref="hr.view_employee_form"/>
+        <priority>99</priority>
+        <arch type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Pisos en TPV" name="pos_floor_access" groups="point_of_sale.group_pos_user">
+                    <group string="Permisos de Pisos en Punto de Venta">
+                        <field name="pos_floor_access_type" widget="radio"/>
+                        <field name="pos_all_floors_access" invisible="1"/>
+                        <field name="pos_floor_ids" 
+                               widget="many2many_tags" 
+                               invisible="pos_floor_access_type == 'all'" 
+                               placeholder="Seleccione los pisos creados a los que tendrá acceso este empleado..."/>
+                    </group>
+                </page>
+            </xpath>
+        </arch>
+    </record>
+</odoo>
+

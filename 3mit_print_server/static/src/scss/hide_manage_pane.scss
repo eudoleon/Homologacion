@@ -1,0 +1,19 @@
+.o_kanban_manage_button_section,
+.o_kanban_manage_view,
+.o_kanban_card_manage_settings {
+    display: none !important;
+}
+
+/* Ocultar boton de Editar Pago en la pantalla de recibo */
+.pos .bg-success-light button,
+.pos .bg-success-light .btn,
+.pos .bg-success button,
+.pos .bg-success .btn,
+.pos .payment-status-container button,
+.pos .payment-status-container .btn,
+.pos .payment-success button,
+.pos .payment-success .btn,
+.pos-receipt-title button,
+.pos .receipt-screen .btn-secondary {
+    display: none !important;
+}

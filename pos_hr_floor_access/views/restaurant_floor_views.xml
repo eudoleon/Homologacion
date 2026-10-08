@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_restaurant_floor_form_inherit_pos_floor_access" model="ir.ui.view">
+        <name>restaurant.floor.form.inherit.pos.floor.access</name>
+        <model>restaurant.floor</model>
+        <inherit_id ref="pos_restaurant.view_restaurant_floor_form"/>
+        <priority>99</priority>
+        <arch type="xml">
+            <xpath expr="//sheet" position="inside">
+                <group string="Control de Acceso de Empleados">
+                    <field name="employee_ids" widget="many2many_tags" placeholder="Seleccione empleados autorizados para este piso..."/>
+                </group>
+            </xpath>
+        </arch>
+    </record>
+</odoo>

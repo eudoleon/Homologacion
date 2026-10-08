@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_pos_config_manager_validation_form" model="ir.ui.view">
+        <field name="name">view.pos.config.manager.validation.form</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="point_of_sale.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//app[@name='point_of_sale']" position="inside">
+                <block title="Manager Validation (Employee)">
+                    <setting help="Setup managers for this Point of Sale" id="manager_validation_employee">
+                        <field name="manager_employee_ids" widget="many2many_tags" options="{'no_create': True}"
+                               required="iface_employee_validate_delete_orderline or iface_employee_validate_delete_order or iface_employee_validate_payment or iface_employee_validate_discount or iface_employee_validate_price or iface_employee_validate_decrease_quantity or iface_employee_validate_close"/>
+                    </setting>
+                    <setting help="Allow manager to validate closing of POS" id="manager_validate_close">
+                        <field name="iface_employee_validate_close"/>
+                    </setting>
+                    <setting help="Allow manager to validate orders need to be deleted" id="manager_validate_delete_order">
+                        <field name="iface_employee_validate_delete_order"/>
+                    </setting>
+                    <setting help="Allow manager to validate order lines need to be deleted" id="manager_validate_delete_orderline">
+                        <field name="iface_employee_validate_delete_orderline"/>
+                    </setting>
+                    <setting help="Allow manager to validate if decreasing quantity is valid on order lines" id="manager_validate_decrease_quantity">
+                        <field name="iface_employee_validate_decrease_quantity"/>
+                    </setting>
+                    <setting help="Allow manager to validate if discount is applicable to order line" id="manager_validate_discount">
+                        <field name="iface_employee_validate_discount"/>
+                    </setting>
+                    <setting help="Allow manager to validate if order is for payment" id="manager_validate_payment">
+                        <field name="iface_employee_validate_payment"/>
+                    </setting>
+                    <setting help="Allow manager to validate if price change is needed for order line" id="manager_validate_price">
+                        <field name="iface_employee_validate_price"/>
+                    </setting>
+                </block>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

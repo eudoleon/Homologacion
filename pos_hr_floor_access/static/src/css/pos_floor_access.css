@@ -1,0 +1,14 @@
+/* Estilos para control de acceso a pisos en POS */
+
+.pos .floor-screen .floor-selector {
+    transition: all 0.25s ease-in-out;
+}
+
+.pos .floor-screen .floor-selector .button {
+    font-weight: 500;
+}
+
+.pos .floor-screen .floor-selector .button.active {
+    font-weight: 700;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}

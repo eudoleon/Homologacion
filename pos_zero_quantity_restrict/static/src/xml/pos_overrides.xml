@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <!-- Tasa del día debajo del Encabezado (pos-receipt-order-data) -->
+    <t t-name="pos_zero_quantity_restrict.OrderReceipt" t-inherit="point_of_sale.OrderReceipt" t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('pos-receipt-order-data')]" position="after">
+            <t t-set="pos" t-value="this.pos || env.services.pos"/>
+            <div t-if="pos and pos.config and pos.config.show_dual_currency" style="text-align: center; margin-top: 5px; margin-bottom: 10px;">
+                <t t-set="rate_value" t-value="pos.config.show_currency_rate ? (1 / pos.config.show_currency_rate).toFixed(2) : '0.00'"/>
+                <strong>Tasa del día: <t t-esc="rate_value"/></strong>
+            </div>
+        </xpath>
+    </t>
+
+    <!-- Ocultar opciones indeseadas del menú de la barra superior (Navbar) -->
+    <t t-name="pos_zero_quantity_restrict.Navbar" t-inherit="point_of_sale.Navbar" t-inherit-mode="extension">
+        <!-- Instalar Aplicación -->
+        <xpath expr="//DropdownItem[contains(text(), 'Install App')]" position="attributes">
+            <attribute name="t-if">false</attribute>
+        </xpath>
+        <!-- Volver a cargar datos -->
+        <xpath expr="//DropdownItem[contains(text(), 'Reload Data')]" position="attributes">
+            <attribute name="t-if">false</attribute>
+        </xpath>
+        <!-- Crear producto -->
+        <xpath expr="//DropdownItem[contains(text(), 'Create Product')]" position="attributes">
+            <attribute name="t-if">false</attribute>
+        </xpath>
+    </t>
+
+</templates>

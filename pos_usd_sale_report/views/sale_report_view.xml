@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- No views needed: sale_report_usd already provides pivot and graph views
+         with price_subtotal_usd as a measure on sale.report.usd -->
+</odoo>

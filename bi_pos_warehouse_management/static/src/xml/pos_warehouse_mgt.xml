@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="pos_custom_discount" inherit_id="point_of_sale.template" xml:space="preserve">
+
+	<t t-name="bi_pos_warehouse_management.PosOutOfStock">
+		<Dialog title="props.title || 'Error'">
+			<p><t t-esc="props.warning || '' "/></p>
+			<t t-if="props.loc_list">
+				<span>Following is list of locations with Quantities:</span>
+				<table style="min-width: 80%;margin-top: 10px;">
+					<tr t-foreach="props.loc_list || []" t-as="loc" t-key="loc[2]">
+						<td><t t-esc="loc[0]"/></td>
+						<td><t t-esc="loc[1]"/></td>
+					</tr>
+				</table>
+			</t>
+			<t t-set-slot="footer">
+				<button class="btn btn-primary" t-on-click="Ok">
+					<t t-esc="props.confirmText || 'Okay'" />
+				</button>
+				<button class="btn btn-secondary" t-on-click="cancel">
+					<t t-esc="props.cancelText || 'Cancel'" />
+				</button>
+			</t>
+		</Dialog>
+	</t>
+
+	<t t-name="bi_pos_warehouse_management.PosStockWarehouse">
+		<Dialog title="props.title || 'Related Warehouses'">
+			<div class="body" style="font-family: 'Lato-Reg';">
+				<div class='div container'>
+					<div class="product-list productt-list-scroller touch-scrollable scrollable-y">
+						<div class='product warehouse-locations' 
+							 t-att-class="{'raghav': state.location_id === item['location'].id}"
+							 style="height:130px; border:1px solid rgb(226, 226, 226); cursor: pointer;" 
+							 t-key="item['location'].id" 
+							 t-foreach="props.result || []" 
+							 t-as="item"  
+							 t-on-click="() => this.selectLocation(item['location'].id)">
+							<span class="price-tag">
+								<strong>Qty: <t t-esc="item['quantity']"/></strong>
+							</span>
+
+							<div class="product-img" style="padding-top:30px">
+								<strong><t t-esc="item['location'].complete_name"/></strong>
+							</div>
+					   </div>
+					</div>
+				</div>
+				<p class="warehouse-qty" t-attf-style="display: #{state.location_id ? 'block' : 'none'};">
+					<label style="padding: 2%;"> Quantity to Use:  </label> 
+					<input id="stock_qty" t-model="state.entered_qty" type="number" class="input-field" name="stock_qty" style="height: 30px; width: 40%;"></input>
+				</p>
+			</div>
+			<t t-set-slot="footer">
+				<button class="btn btn-primary apply" t-on-click="apply">
+					<t t-esc="props.confirmText || 'Apply'" />
+				</button>
+				<button class="btn btn-secondary cancel" t-on-click="cancel">
+					<t t-esc="props.cancelText || 'Cancel'" />
+				</button>
+			</t>
+		</Dialog>
+	</t>
+	<t t-inherit="point_of_sale.ProductCard" t-inherit-mode="extension">
+		<xpath expr="//article" position="inside">
+			<t t-if="env.services.pos.config.display_stock_pos">
+				<t t-set="total_qty" t-value="env.services.pos.get_product_total_qty(props.productId)"/>
+				<t t-if="total_qty !== false">
+					<div class="pos-stock-badge" style="position: absolute; top: 6px; left: 6px; background-color: #3b82f6; color: white; font-size: 0.85rem; font-weight: bold; padding: 3px 8px; border-radius: 6px; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.2); pointer-events: none;">
+						<i class="fa fa-archive me-1"></i> <t t-esc="total_qty"/>
+					</div>
+				</t>
+			</t>
+		</xpath>
+	</t>
+	
+</templates>

@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <!-- 1. Plantilla Oficial y Autónoma de Comanda de Cocina (80mm KOT) para POS Cajero Smashack -->
+    <t t-name="mai_pos_customised_KOT.CashierOrderChangeReceipt" xml:space="preserve">
+        <div class="pos-receipt kot-receipt" style="width: 72mm; max-width: 72mm; margin: 0 auto; font-family: 'Courier New', Courier, monospace, sans-serif; font-size: 13px; line-height: 1.25; color: #000; text-align: left; padding: 2mm 0 4mm 0;">
+            
+            <!-- ENCABEZADO SMASHACK POS : FECHA HORA -->
+            <div class="receipt-header" style="text-align: center; margin-bottom: 6px;">
+                <div style="font-size: 14px; font-weight: 900; letter-spacing: 0.5px; text-transform: uppercase;">
+                    <t t-esc="data.config_name || 'SMASHACK POS'"/> : <t t-esc="data.time"/>
+                </div>
+                <div t-if="data.employee_name" style="font-size: 12px; margin-top: 2px;">
+                    Cajero: <t t-esc="data.employee_name"/>
+                </div>
+                
+                <div style="border-top: 1px dashed #000; margin: 5px 0;"/>
+                
+                <!-- DATOS DEL CLIENTE Y ORDEN -->
+                <div t-if="data.client" style="font-size: 14px; font-weight: bold; text-align: left; margin-top: 2px;">
+                    Cliente: <span t-esc="data.client"/>
+                </div>
+                <div t-if="data.sequence" style="font-size: 14px; font-weight: bold; text-align: left; margin-top: 2px;">
+                    Comanda N&#176;: <span t-esc="data.sequence"/>
+                </div>
+                <div style="font-size: 15px; font-weight: 900; text-align: left; margin-top: 2px;">
+                    Orden #: <span t-esc="data.tracking_number || data.pos_reference"/>
+                </div>
+            </div>
+
+            <!-- TÍTULO OPERACIONAL COMANDA COCINA -->
+            <div style="border-top: 2px dashed #000; border-bottom: 2px dashed #000; padding: 4px 0; margin: 6px 0; text-align: center; font-size: 15px; font-weight: 900; letter-spacing: 1px;">
+                --- COMANDA COCINA ---
+            </div>
+
+            <!-- LÍNEAS DEL PEDIDO -->
+            <div class="kot-lines" style="margin-top: 5px;">
+                <t t-foreach="data.lines" t-as="line" t-key="line_index">
+                    <div class="kot-line" t-att-style="line.is_combo_child ? 'margin-left: 14px; margin-top: 4px;' : 'margin-top: 8px;'">
+                        <div style="display: flex; align-items: flex-start; font-size: 14px; font-weight: bold;">
+                            <span t-if="line.is_combo_child" style="min-width: 14px; font-size: 14px; font-weight: bold;">&#8627;</span>
+                            <span style="min-width: 26px; font-size: 15px;"><t t-esc="line.quantity"/>x</span>
+                            <span style="flex: 1;"><t t-esc="line.name"/></span>
+                        </div>
+                        
+                        <!-- Personalizaciones, Atributos y Extras -->
+                        <t t-if="line.attributes and line.attributes.length">
+                            <div t-att-style="line.is_combo_child ? 'margin-left: 40px; font-size: 12px;' : 'margin-left: 26px; font-size: 12px;'" style="font-weight: normal; color: #111; line-height: 1.2; margin-top: 1px;">
+                                <t t-foreach="line.attributes" t-as="attr" t-key="attr_index">
+                                    <div>&#8226; <t t-esc="attr"/></div>
+                                </t>
+                            </div>
+                        </t>
+
+                        <!-- Notas especiales de cocina -->
+                        <t t-if="line.customer_note">
+                            <div t-att-style="line.is_combo_child ? 'margin-left: 40px;' : 'margin-left: 26px;'" style="font-size: 12px; font-weight: bold; color: #000; margin-top: 2px;">
+                                *** NOTA: <span t-esc="line.customer_note"/> ***
+                            </div>
+                        </t>
+                    </div>
+                </t>
+            </div>
+
+            <!-- PIE DE TICKET -->
+            <div style="border-top: 2px dashed #000; margin-top: 10px; padding-top: 5px; text-align: center; font-size: 12px; font-weight: bold; letter-spacing: 0.5px;">
+                *** FIN DE COMANDA ***
+            </div>
+        </div>
+    </t>
+
+    <!-- 2. Extensión a la plantilla estándar para compatibilidad -->
+    <t t-name="mai_pos_customised_KOT.OrderChangeReceipt" t-inherit="point_of_sale.OrderChangeReceipt" t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('receipt-header')]//div[hasclass('o-employee-name')]" position="after">
+            <div t-if="data.client" style="font-size: 115%; font-weight: bold; margin-top: 5px;">
+                Cliente: <span t-esc="data.client"/>
+            </div>
+            <div t-if="data.sequence" style="font-size: 110%; font-weight: bold; margin-top: 3px;">
+                Comanda N&#176;: <span t-esc="data.sequence"/>
+            </div>
+        </xpath>
+    </t>
+
+</templates>
+
+

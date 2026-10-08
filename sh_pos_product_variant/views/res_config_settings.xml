@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record model="ir.ui.view" id="sh_pos_product_variant_config_inherit">
+       <field name="name">res.config.settings.view.form.inherit.sh_po_logo</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="point_of_sale.res_config_settings_view_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//app[@name='point_of_sale']" position="inside">
+                <block title="Product Variant Config" id="pos_product_variant_config_section">
+                    <setting help="Enable Product Variants in POS">
+                        <field name="pos_sh_pos_enable_product_variants" />
+                        <div class="content-group" invisible="not pos_sh_pos_enable_product_variants">
+                            <div class="mt16">
+                                <field name="pos_sh_pos_variants_group_by_attribute" class="oe_inline"/>
+                                <label for="pos_sh_pos_variants_group_by_attribute" />
+                            </div>
+                        </div>
+                    </setting>
+                    <setting help="Auto close popup after single variant selection">
+                        <field name="pos_sh_close_popup_after_single_selection" />
+                    </setting>
+                    <setting help="Display Alternative product">
+                        <field name="pos_sh_pos_display_alternative_products" />
+                    </setting>
+                </block>
+            </xpath>
+        </field>
+    </record>
+    
+</odoo>

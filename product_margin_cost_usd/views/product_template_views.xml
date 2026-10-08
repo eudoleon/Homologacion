@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_product_template_form_inherit_margin_cost_usd" model="ir.ui.view">
+        <field name="name">product.template.form.margin.cost.usd</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_only_form_view"/>
+        <field name="arch" type="xml">
+            <!-- Show right below standard_price's div wrapper -->
+            <xpath expr="//div[@name='standard_price_uom']" position="after">
+                <field name="margin_cost_usd" readonly="1"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

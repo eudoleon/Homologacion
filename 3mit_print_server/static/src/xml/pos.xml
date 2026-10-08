@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="ReceiptScreen" t-inherit="point_of_sale.ReceiptScreen" t-inherit-mode="extension" owl="1">
+        <!-- 🔹 Ocultar recibo completamente reemplazando el nodo -->
+        <xpath expr="//div[hasclass('pos-receipt-container')]" position="replace">
+            <div class="pos-receipt-container d-none" style="display: none !important; visibility: hidden !important; width: 0px !important; height: 0px !important; opacity: 0 !important; overflow: hidden !important;"/>
+        </xpath>
+
+        <!-- 🔹 Ocultar botones nativos de impresión de recibo y editar pago -->
+        <xpath expr="//span[hasclass('edit-order-payment')]" position="replace">
+            <span class="d-none" style="display: none !important; visibility: hidden !important;"/>
+        </xpath>
+        <!-- 🔹 Colocar los botones de Imprimir Factura Fiscal e Imprimir Orden debajo del cuadro de Pago Exitoso -->
+        <xpath expr="//button[contains(@t-on-click, 'doFullPrint')]" position="replace">
+            <button type="button" t-if="this.currentOrder &amp;&amp; !this.currentOrder.impresa" class="btn btn-lg btn-success button fiscal-print mit-action-button mit-action-button--fiscal mit-fiscal-print d-inline-flex align-items-center justify-content-center gap-2 px-4 py-3 fw-bold shadow-sm w-100 mb-2" t-on-click="printNewButtonFiscal">
+                <i class="fa fa-print fa-lg"></i>
+                <span>Imprimir factura fiscal</span>
+            </button>
+            <button type="button" t-if="this.currentOrder" class="btn btn-lg btn-primary button order-print mit-action-button mit-action-button--kitchen mit-kitchen-print d-inline-flex align-items-center justify-content-center gap-2 px-4 py-3 fw-bold shadow-sm w-100 mb-2" t-on-click="printKitchenOrderOnly">
+                <i class="fa fa-cutlery fa-lg"></i>
+                <span>Imprimir orden</span>
+            </button>
+        </xpath>
+
+        <!-- 🔹 Ocultar el botón secundario de impresiones básicas si existiera -->
+        <xpath expr="//button[contains(@t-on-click, 'doBasicPrint')]" position="replace">
+            <button class="d-none" style="display: none !important; visibility: hidden !important;"/>
+        </xpath>
+
+        <!-- 🔹 Botón Nuevo Pedido en el pie de página sticky: SOLO aparece cuando la factura fiscal YA FUE IMPRESA -->
+        <xpath expr="//button[@name='done']" position="replace">
+            <button type="button" t-if="this.currentOrder &amp;&amp; this.currentOrder.impresa" class="btn btn-lg btn-primary button next highlight validation-button mit-action-button mit-action-button--next mit-receipt-new-order d-inline-flex align-items-center justify-content-center gap-2 px-4 py-3 fw-bold shadow-sm w-100" name="done" t-on-click="actionOrderDone3mit">
+                <i class="fa fa-arrow-right fa-lg"></i>
+                <span>Nuevo pedido</span>
+            </button>
+        </xpath>
+
+        <xpath expr="//div[@name='done']" position="replace">
+            <div t-if="this.currentOrder &amp;&amp; this.currentOrder.impresa" class="btn btn-lg btn-primary btn-switchpane validation-button highlight mit-action-button mit-action-button--next mit-receipt-new-order d-inline-flex align-items-center justify-content-center gap-2 px-4 py-3 fw-bold shadow-sm w-100" name="done" t-on-click="actionOrderDone3mit">
+                <i class="fa fa-arrow-right fa-lg"></i>
+                <span>Nuevo pedido</span>
+            </div>
+        </xpath>
+        
+    </t>
+    <!-- TicketScreen inheritance removed: original xpath was not found in newer POS templates and caused OWL lifecycle errors.
+         If you want to reintroduce a delete-button change, add it with a safer xpath targeting a stable parent container. -->
+</templates>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates id="template" xml:space="preserve">
+    <t t-name="hide_pos_product_info.SetSaleOrderButton" t-inherit="pos_sale.SetSaleOrderButton" t-inherit-mode="extension" owl="1">
+        <xpath expr="//*[contains(@class, 'o_sale_order_button')]" position="replace">
+            <button class="control-button o_sale_order_button" t-on-click="click">
+                <i class="fa fa-link" role="img" aria-label="Set Sale Order" title="Set Sale Order" />
+                Facturar presupuesto
+            </button>
+        </xpath>
+    </t>
+</templates>

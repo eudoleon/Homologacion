@@ -1,0 +1,44 @@
+<odoo>
+
+    <data>
+        <!-- <record id="3mit_print_server_config" model="ir.ui.view">
+            <field name="name">pos.config.config</field>
+            <field name="model">pos.config</field>
+            <field name="inherit_id" ref="point_of_sale.pos_config_view_form" />
+            <field name="arch" type="xml"> -->
+
+
+        <record id="3mit_print_server_config" model="ir.ui.view">
+            <field name="name">res.config.settings.view.form.inherit.custom</field>
+            <field name="model">res.config.settings</field>
+            <field name="priority" eval="10"/>
+            <field name="inherit_id" ref="point_of_sale.res_config_settings_view_form" />
+            <field name="arch" type="xml">
+                <xpath expr="//setting[@id='pos_other_devices']/field[@name='pos_other_devices']" position="after">
+                    <div class="content-group">
+                        <div class="row mt-2">
+                            <label string="3Mit Printer Queue" for="printer_host" class="col-lg-5 o_form_label"/>
+                        </div>
+                        <div class="row">
+                            <label string="Host" for="printer_host" class="col-lg-5 o_light_label" />
+                            <field name="printer_host" />
+                        </div>
+                        <div class="row" invisible="not printer_host">
+                            <label string="Puerto Serial" for="printer_port" class="col-lg-5 o_light_label" />
+                            <field name="printer_port" />
+                        </div>
+                        <div class="row" invisible="not printer_host">
+                            <label string="Serial de Impresora" for="printer_serial" class="col-lg-5 o_light_label" />
+                            <field name="printer_serial" />
+                        </div>
+                    </div>
+                    <div role="alert" class="alert alert-warning"
+                        invisible="not pos_other_devices or not pos_iface_print_via_proxy or not printer_host">
+                        El driver 3Mit será usado en lugar de la impresora conectada al IoT Box.
+                    </div>
+                </xpath>
+            </field>
+        </record>
+    </data>
+
+</odoo>

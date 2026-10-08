@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- 1. Redirigir la acción de edición de contacto de POS a la vista simplificada -->
+    <record id="point_of_sale.res_partner_action_edit_pos" model="ir.actions.act_window">
+        <field name="view_id" ref="base.view_partner_simple_form"/>
+        <field name="views">[(ref('base.view_partner_simple_form'), 'form')]</field>
+    </record>
+
+    <!-- 2. Vista optimizada y limpia de contacto para Punto de Venta -->
+    <record id="view_partner_simple_form_pos_custom" model="ir.ui.view">
+        <field name="name">res.partner.simple.form.pos.custom</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_simple_form"/>
+        <field name="priority">25</field>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='image_1920']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='parent_id']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//group" position="replace">
+                <group>
+                    <group name="group_pos_fiscal" string="Identificación y Contacto">
+                        <field name="nationality" string="Nacionalidad" required="company_type == 'person'" invisible="company_type == 'company'"/>
+                        <field name="id_type" string="Tipo Documento" invisible="company_type == 'company'"/>
+                        <field name="identification_id" placeholder="Ej. 12345678" string="Cédula" required="company_type == 'person'" invisible="company_type == 'company'"/>
+                        <field name="rif" placeholder="Ej. J-12345678-0" string="RIF" required="company_type == 'company'"/>
+                        <field name="phone" widget="phone" string="Teléfono" required="1" placeholder="Ej. 04141234567"/>
+                        <field name="email" widget="email" string="Correo" placeholder="cliente@correo.com"/>
+                        <field name="people_type_individual" invisible="1"/>
+                        <field name="people_type_company" invisible="1"/>
+                        <field name="vat" invisible="1"/>
+                    </group>
+                    <group name="group_pos_address" string="Dirección Fiscal">
+                        <field name="street" placeholder="Av. Principal, local..." string="Dirección" required="1"/>
+                        <field name="state_id" placeholder="Estado" options="{'no_open': True, 'no_create': True}"/>
+                        <field name="municipality_id" placeholder="Municipio" options="{'no_open': True, 'no_create': True}" domain="[('state_id', '=', state_id)]"/>
+                        <field name="parish_id" placeholder="Parroquia" options="{'no_open': True, 'no_create': True}" domain="[('municipality_id', '=', municipality_id)]"/>
+                        <field name="city" placeholder="Ciudad"/>
+                        <field name="country_id" invisible="1"/>
+                    </group>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>

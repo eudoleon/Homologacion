@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_partner_form_inherit_custom_contact" model="ir.ui.view">
+        <field name="name">res.partner.form.inherit.custom.contact</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="l10n_ve_full.extra_partner_venezuela"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='identification_id']" position="before">
+                <field name="id_type" invisible="company_type == 'company'"/>
+            </xpath>
+            <xpath expr="//field[@name='rif']" position="before">
+                <field name="id_type" invisible="company_type == 'person'"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

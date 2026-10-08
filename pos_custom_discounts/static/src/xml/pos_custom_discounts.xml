@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright (c) 2016-Present Webkul Software Pvt. Ltd. (<https://webkul.com/>) -->
+<!-- See LICENSE file for full copyright and licensing details. -->
+<!-- License URL : <https://store.webkul.com/license.html/> -->
+<templates id="template" xml:space="preserve">
+    <!-- 1. WkDiscountPopup Template -->
+    <t t-name="pos_custom_discounts.WkDiscountPopup" owl="1">
+        <Dialog title="props.title || 'Listado de Descuentos'" size="'md'">
+            <div class="wk_popup_body d-flex flex-column gap-3">
+                <t t-if="this.pos.config.allow_custom_discount">
+                    <button class="btn btn-primary w-100 py-3 mb-2 d-flex align-items-center justify-content-center gap-2 shadow-sm" t-on-click="click_customize">
+                        <i class="fa fa-tags"></i> Descuento Personalizado
+                    </button>
+                </t>
+                
+                <div class="discounts-list overflow-auto pe-1" style="max-height: 250px;">
+                    <t t-if="!discounts.length">
+                        <div class="text-center my-4 text-muted">
+                            No hay ningún descuento disponible para la sesión POS actual, agregue el descuento desde la configuración.
+                        </div>
+                    </t>
+                    <div class="row g-2">
+                        <t t-foreach="discounts" t-as="item" t-key="item.id">
+                            <div class="col-6">
+                                <button class="btn btn-outline-secondary p-3 w-100 text-start d-flex flex-column justify-content-between align-items-start border-2 h-100 shadow-sm"
+                                        t-att-class="{ 'active selected border-primary bg-light text-primary': state.selected_discount.id === item.id }"
+                                        t-on-click="() => this.click_wk_product_discount(item)">
+                                    <span class="fs-3 fw-bolder">
+                                        <t t-esc="item.discount_percent"/>%
+                                    </span>
+                                    <span class="text-muted small text-truncate w-100 fw-medium mt-1"><t t-esc="item.name"/></span>
+                                </button>
+                            </div>
+                        </t>
+                    </div>
+                </div>
+
+                <div t-if="state.show_error" class="alert alert-warning py-2 mb-0 d-flex align-items-center gap-2">
+                    <i class="fa fa-exclamation-triangle"></i> Por favor Seleccione un Descuento
+                </div>
+            </div>
+
+            <t t-set-slot="footer">
+                <button class="btn btn-secondary px-4 py-2" t-on-click="props.close">Cancelar</button>
+                <button class="btn btn-primary px-3 py-2" t-on-click="click_apply">Línea Seleccionada</button>
+                <button class="btn btn-primary px-3 py-2" t-on-click="click_apply_complete_order">Todo el Pedido</button>
+                <t t-if="hasActiveDiscount">
+                    <button class="btn btn-danger px-3 py-2" t-on-click="click_remove_discount">Remover Descuentos</button>
+                </t>
+            </t>
+        </Dialog>
+    </t>
+
+    <!-- 2. WkCustomDiscountPopup Template -->
+    <t t-name="pos_custom_discounts.WkCustomDiscountPopup" owl="1">
+        <Dialog title="props.title || 'Personalizar Descuento'" size="'md'">
+            <div class="wk_popup_body d-flex flex-column gap-3 py-2">
+                <div class="form-group mb-2">
+                    <label for="discount" class="form-label fw-bold mb-1">Descuento (%)</label>
+                    <div class="input-group input-group-lg shadow-sm">
+                        <input id="discount" type="number" step="any" min="0" max="100" class="form-control"
+                               t-model="state.discount" placeholder="0.00" autocomplete="off"/>
+                        <span class="input-group-text fw-bold">%</span>
+                    </div>
+                </div>
+                
+                <div class="form-group mb-2">
+                    <label for="reason" class="form-label fw-bold mb-1">Razón del Descuento</label>
+                    <textarea id="reason" class="form-control form-control-lg shadow-sm" rows="3" t-model="state.reason" placeholder="Escriba el motivo del descuento..."></textarea>
+                </div>
+
+                <div t-if="state.error_message" class="alert alert-danger py-2 mb-0 d-flex align-items-center gap-2">
+                    <i class="fa fa-exclamation-triangle"></i> <t t-esc="state.error_message"/>
+                </div>
+            </div>
+
+            <t t-set-slot="footer">
+                <button class="btn btn-secondary px-4 py-2" t-on-click="props.close">Cancelar</button>
+                <button class="btn btn-primary px-3 py-2" t-on-click="click_current_product">Línea Seleccionada</button>
+                <button class="btn btn-primary px-3 py-2" t-on-click="click_whole_order">Todo el Pedido</button>
+                <t t-if="props.custom_discount">
+                    <button class="btn btn-danger px-3 py-2" t-on-click="click_remove_discount">Remover Descuento</button>
+                </t>
+            </t>
+        </Dialog>
+    </t>
+
+    <!-- 3. Inherit point_of_sale.Orderline Template to show discount reasons -->
+    <t t-name="point_of_sale.Orderline" t-inherit="point_of_sale.Orderline" t-inherit-mode="extension" owl="1">
+        <xpath expr="//ul[hasclass('info-list')]" position="inside">
+            <li id='custom_discount_reason' class="fw-bold text-success fst-italic py-1" t-if="line.get_custom_discount_reason and line.get_custom_discount_reason()">
+                <i class="fa fa-tag me-1"></i>Motivo: <t t-esc="line.get_custom_discount_reason()"/>
+            </li>
+        </xpath>
+    </t>
+</templates>

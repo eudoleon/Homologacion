@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="PaymentScreenPaymentLines" t-inherit="point_of_sale.PaymentScreenPaymentLines" t-inherit-mode="extension" owl="1">
+        <xpath expr="//div[hasclass('payment-amount')]" position="before">
+            <t t-if='this.pos.config.is_allow_payment_reference'>
+                <div class="payment-reference">
+                    <span class='payment-info-button pull-right btn btn-light' t-att-data-cid='line.cid'
+                        t-on-click="() => this.updatePaymentReference(line)">
+                        <i class='fa fa-edit'> Reference</i>
+                    </span>
+                </div>
+            </t>
+        </xpath>
+    </t>
+
+    <t t-name="payment_reference_on_pos.PaymentReferencePopup" owl="1">
+        <Dialog title="props.title || 'Add / Update Payment Reference'" size="'md'">
+            <div class="popup popup-text PaymentReferencePopup p-3">
+                <main class="body">
+                    <textarea class="form-control" t-model="state.inputValue" t-ref="input" rows="4" placeholder="Enter payment reference..."></textarea>
+                </main>
+            </div>
+            <t t-set="footer_slot" t-value="true"/>
+            <t t-set-slot="footer">
+                <button class="btn btn-primary confirm px-4" t-on-click="confirm">
+                    Ok
+                </button>
+                <button class="btn btn-secondary cancel px-4" t-on-click="cancel">
+                    Cancel
+                </button>
+            </t>
+        </Dialog>
+    </t>
+
+</templates>

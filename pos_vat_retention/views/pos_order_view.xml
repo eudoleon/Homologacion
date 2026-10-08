@@ -1,0 +1,38 @@
+<odoo>
+    <record id="view_pos_order_form_vat_retention" model="ir.ui.view">
+        <field name="name">pos.order.form.vat.retention</field>
+        <field name="model">pos.order</field>
+        <field name="inherit_id" ref="point_of_sale.view_pos_pos_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Retenciones IVA">
+                    <group>
+                        <button name="action_generate_vat_retention" string="Generar Retención IVA"
+                                type="object" class="oe_highlight"/>
+                        <button name="action_confirm_vat_retention" string="Confirmar Retención IVA"
+                                type="object" class="btn-primary"/>
+                    </group>
+                    <field name="vat_retention_ids">
+                        <list editable="bottom">
+                            <field name="retention_date"/>
+                            <field name="comprobante_number"/>
+                            <field name="amount_retained" readonly="1"/>
+                        </list>
+                        <form>
+                            <group>
+                                <field name="retention_date"/>
+                                <field name="comprobante_number"/>
+                                <field name="amount_retained" readonly="1"/>
+                            </group>
+                        </form>
+                    </field>
+                    <group>
+                        <field name="vat_retention_move_id" options="{'no_create': True}" 
+                               string="Asiento de Retención IVA"
+                               readonly="1"/>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

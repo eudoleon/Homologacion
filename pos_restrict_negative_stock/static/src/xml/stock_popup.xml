@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-name="pos_restrict_negative_stock.StockRestrictionPopup">
+        <Dialog title="props.title || 'Stock Insuficiente'">
+            <div class="stock-restriction-popup-content p-4 text-center">
+                <!-- Icono de advertencia con animación pulse -->
+                <div class="stock-warning-icon-wrapper mb-3 mx-auto">
+                    <div class="stock-warning-icon">
+                        <i class="fa fa-exclamation-triangle"></i>
+                    </div>
+                </div>
+
+                <!-- Nombre del Producto -->
+                <h4 class="fw-bold text-dark mb-2">
+                    <t t-esc="props.productName"/>
+                </h4>
+
+                <!-- Descripción / Mensaje -->
+                <p class="text-muted mb-4 fs-6">
+                    <t t-if="props.reason">
+                        <t t-esc="props.reason"/>
+                    </t>
+                    <t t-elif="props.requestedQty">
+                        La cantidad solicitada (<strong class="text-dark"><t t-esc="props.requestedQty"/></strong>) supera la existencia disponible en inventario.
+                    </t>
+                    <t t-else="">
+                        No se pueden agregar más unidades. El límite del inventario disponible ha sido alcanzado.
+                    </t>
+                </p>
+
+                <!-- Tarjeta métrica de stock -->
+                <div class="stock-details-card d-flex justify-content-around align-items-center p-3 rounded-3 mb-2">
+                    <div class="stock-detail-item text-center px-2">
+                        <span class="stock-detail-label d-block text-uppercase fw-bold text-muted mb-1">Stock Disponible</span>
+                        <span class="stock-detail-value d-block fs-3 fw-bolder text-success">
+                            <t t-esc="props.availableStock"/>
+                        </span>
+                    </div>
+
+                    <div class="stock-detail-divider"></div>
+
+                    <t t-if="props.usedQty !== undefined">
+                        <div class="stock-detail-item text-center px-2">
+                            <span class="stock-detail-label d-block text-uppercase fw-bold text-muted mb-1">En Pedido</span>
+                            <span class="stock-detail-value d-block fs-3 fw-bolder text-primary">
+                                <t t-esc="props.usedQty"/>
+                            </span>
+                        </div>
+                    </t>
+                    <t t-elif="props.maxAllowed !== undefined">
+                        <div class="stock-detail-item text-center px-2">
+                            <span class="stock-detail-label d-block text-uppercase fw-bold text-muted mb-1">Máximo Permitido</span>
+                            <span class="stock-detail-value d-block fs-3 fw-bolder text-warning">
+                                <t t-esc="props.maxAllowed"/>
+                            </span>
+                        </div>
+                    </t>
+                </div>
+            </div>
+
+            <t t-set-slot="footer">
+                <button class="btn btn-primary btn-lg w-100 fw-bold shadow-sm stock-popup-btn" t-on-click="confirm">
+                    <i class="fa fa-check-circle me-2"></i> Entendido
+                </button>
+            </t>
+        </Dialog>
+    </t>
+
+</templates>

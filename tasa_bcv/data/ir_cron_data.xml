@@ -1,0 +1,24 @@
+<odoo>
+    <data>
+        <record id="ir_cron_actualizar_tasa_bcv" model="ir.cron">
+            <field name="name">Actualizar Tasa BCV (USD/EUR) y Productos</field>
+            <field name="model_id" ref="base.model_res_currency"/>
+            <field name="state">code</field>
+            <field name="code">model.actualizar_tasa_bcv()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <field name="active">True</field>
+        </record>
+
+        <record id="ir_cron_tasa_bcv_pruebas_manuales" model="ir.cron">
+            <field name="name">Tasa BCV de Pruebas Manuales</field>
+            <field name="model_id" ref="base.model_res_currency"/>
+            <field name="state">code</field>
+            <field name="code">model.actualizar_tasa_bcv_pruebas_manual()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <field name="nextcall">2099-01-01 00:00:00</field>
+            <field name="active">True</field>
+        </record>
+    </data>
+</odoo>

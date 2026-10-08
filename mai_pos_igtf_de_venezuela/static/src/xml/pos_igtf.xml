@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="pos_template" inherit_id="point_of_sale.template" xml:space="preserve">
+
+	<!-- Pantalla de Pago -->
+	<t t-name="mai_pos_igtf_de_venezuela.PaymentScreenStatus" t-inherit="point_of_sale.PaymentScreenStatus" t-inherit-mode="extension">
+		<xpath expr="//div[hasclass('payment-status-container')]" position="after">
+			<t t-if="props.order and props.order.get_igtf_charge() > 0">
+				<div class="payment-status-total-igtf d-flex justify-content-between px-3 py-2 fw-bold text-danger" style="font-size: 1.2em;">
+					<span class="label">Recargo IGTF (3%)</span>
+					<span class="d-flex flex-column align-items-end">
+						<div><t t-esc="env.utils.formatCurrency(props.order.get_igtf_charge())"/></div>
+						<t t-set="pos" t-value="this.pos || env.services.pos"/>
+						<t t-if="pos and pos.config and pos.config.show_dual_currency">
+							<t t-set="igtf_usd" t-value="(props.order.get_igtf_charge() * pos.config.show_currency_rate)"/>
+							<t t-set="symbol_other" t-value="(pos.config.show_currency_symbol == '$' || !pos.config.show_currency_symbol) ? 'REF ' : (pos.config.show_currency_symbol + ' ')"/>
+							<div class="text-muted fw-normal" style="font-size: 0.65em;">
+								<t t-esc="symbol_other"/> <t t-esc="env.utils.formatCurrency(igtf_usd, false)"/>
+							</div>
+						</t>
+					</span>
+				</div>
+			</t>
+		</xpath>
+	</t>
+
+	<!-- Recibo del cliente -->
+	<t t-name="mai_pos_igtf_de_venezuela.OrderReceipt" t-inherit="point_of_sale.OrderReceipt" t-inherit-mode="extension">
+		<xpath expr="//div[hasclass('pos-receipt-amount')][1]" position="before">
+			<div t-if="props.order.get_igtf_charge() > 0" class="pos-receipt-right-align">
+				<span>IGTF 3%: </span>
+				<span t-esc="env.utils.formatCurrency(props.order.get_igtf_charge())" />
+			</div>
+		</xpath>
+	</t>
+
+	<!-- Pantalla de Pago Exitoso (ReceiptScreen en Odoo 19) -->
+	<t t-name="mai_pos_igtf_de_venezuela.ReceiptScreen" t-inherit="point_of_sale.ReceiptScreen" t-inherit-mode="extension">
+		<xpath expr="//div[hasclass('o_payment_successful')]//span[@t-esc='orderAmountPlusTip']" position="replace">
+			<span>
+				<t t-if="currentOrder and currentOrder.get_igtf_charge() > 0">
+					<t t-esc="env.utils.formatCurrency(currentOrder.priceIncl + currentOrder.get_igtf_charge())" />
+				</t>
+				<t t-else="">
+					<t t-esc="orderAmountPlusTip" />
+				</t>
+			</span>
+		</xpath>
+	</t>
+
+</templates>
+
+

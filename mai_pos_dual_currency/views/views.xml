@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+	<data>
+
+		<record id="pos_payment_method_view_form_inherit" model="ir.ui.view">
+			<field name="name">pos.payment.method.form.inherit</field>
+			<field name="model">pos.payment.method</field>
+			<field name="inherit_id" ref="point_of_sale.pos_payment_method_view_form"/>
+			<field name="arch" type="xml">
+				<field name="journal_id" position="after">
+					<field name="pago_usd"/>
+				</field>
+			</field>
+		</record>
+
+		<record id="pos_payment_tree_inherit_usd" model="ir.ui.view">
+			<field name="name">pos.payment.tree.inherit.usd</field>
+			<field name="model">pos.payment</field>
+			<field name="inherit_id" ref="point_of_sale.view_pos_payment_tree"/>
+			<field name="arch" type="xml">
+				<xpath expr="//field[@name='amount']" position="after">
+					<field name="usd_amt"/>
+				</xpath>
+			</field>
+		</record>
+
+
+		 <record id="res_config_settings_view_form" model="ir.ui.view">
+            <field name="name">res.config.settings.view.form.inherit</field>
+            <field name="model">res.config.settings</field>
+            <field name="inherit_id" ref="point_of_sale.res_config_settings_view_form"/>
+            <field name="arch" type="xml">
+				<xpath expr="//app[@name='point_of_sale']" position="inside">
+					<block title="Dual Currency">
+						<setting help="Adds price of other currency at products">
+							<field name="show_dual_currency" />
+							<div class="content-group mt16" invisible="not show_dual_currency">
+								<div class="row mt16">
+									<label for="show_currency" string="Currency"  class="col-lg-3 o_light_label"/>
+									<field name="show_currency" />
+								</div>
+								<div class="row mt16">
+									<label for="show_currency_rate" string="Rate"  class="col-lg-3 o_light_label"/>
+									<field name="show_currency_rate" digits="[12,12]"/>
+								</div>
+							</div>
+						</setting>
+					</block>
+				</xpath>
+			</field>
+		</record>
+
+		<record id="view_invoice_tree_bimc" model="ir.ui.view">
+			<field name="name">account.view_invoice_tree.bimc</field>
+			<field name="model">account.move</field>
+			<field name="inherit_id" ref="account.view_invoice_tree"/>
+			<field name="arch" type="xml">
+				<xpath expr="//field[@name='name']" position="after">
+					<field name="vef_currency_id" invisible="1"/>
+					<field name="usd_currency_id" invisible="1"/>
+					<!-- <field name="currency_rate" optional="show" widget="monetary" options="{'currency_field': 'vef_currency_id'}"/>
+					<field name="impuesto_en_vef" optional="show" widget="monetary" options="{'currency_field': 'usd_currency_id'}"/>
+					<field name="total_amount_vef" optional="show" widget="monetary" options="{'currency_field': 'usd_currency_id'}"/> -->
+				</xpath>
+			</field>
+		</record>
+
+		<record id="view_move_form_bimc" model="ir.ui.view">
+			<field name="name">account.view_invoice_tree.bimc</field>
+			<field name="model">account.move</field>
+			<field name="inherit_id" ref="account.view_move_form"/>
+			<field name="arch" type="xml">
+				<field name="currency_id" position="after">
+					<field name="currency_rate" invisible="1"  widget="monetary" options="{'currency_field': 'vef_currency_id'}"/>
+					<field name="vef_currency_id"/>
+				</field>
+			</field>
+		</record>
+
+		<record id="view_inherit_tree_currency" model="ir.ui.view">
+			<field name="name">res.currency.tree.inherit</field>
+			<field name="model">res.currency</field>
+			<field name="inherit_id" ref="base.view_currency_tree"/>
+			<field name="arch" type="xml">
+				<xpath expr="//field[@name='rate']" position="replace">
+					<field name="rate" digits="[12,2]"/>
+				</xpath>
+			</field>
+		</record>
+
+		<record id="view_inherit_view_currency_form" model="ir.ui.view">
+			<field name="name">res.currency.form.inherit</field>
+			<field name="model">res.currency</field>
+			<field name="inherit_id" ref="base.view_currency_form"/>
+			<field name="arch" type="xml">
+				<xpath expr="//field[@name='rate']" position="replace">
+					<field name="rate" digits="[12,2]"/>
+				</xpath>
+			</field>
+		</record>
+
+		<record id="view_currency_rate_tree_inherit" model="ir.ui.view">
+			<field name="name">res.currency.rate.tree.inherit</field>
+			<field name="model">res.currency.rate</field>
+			<field name="inherit_id" ref="base.view_currency_rate_tree"/>
+			<field name="arch" type="xml">
+				<xpath expr="//field[@name='rate']" position="replace">
+					<field name="rate" digits="[12,2]"/>
+				</xpath>
+			</field>
+		</record>
+
+		<record id="view_currency_rate_form_inherit" model="ir.ui.view">
+			<field name="name">res.currency.rate.form.inherit</field>
+			<field name="model">res.currency.rate</field>
+			<field name="inherit_id" ref="base.view_currency_rate_form"/>
+			<field name="arch" type="xml">
+				<xpath expr="//field[@name='rate']" position="replace">
+					<field name="rate" digits="[12,2]"/>
+				</xpath>
+			</field>
+		</record>
+	</data>
+</odoo>

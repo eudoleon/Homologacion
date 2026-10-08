@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="company_form_vat_" model="ir.ui.view">
+            <field name="name">res.company.form.vat.inherit</field>
+            <field name="model">res.company</field>
+            <field name="inherit_id" ref="base.view_company_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//sheet" position="inside">
+                    <group name="igtf_configuration" string="CUENTAS IGTF DIVISA POS">
+                        <field name="is_igtf"/>
+                        <field name="igtf_percentage"/>
+                        <field name="receivable_account_id"/>
+                        <field name="payable_account_id"/>
+                    </group>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

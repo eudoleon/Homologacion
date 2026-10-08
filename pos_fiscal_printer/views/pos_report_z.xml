@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- vista formulario de pos.report.z -->
+    <record id="pos_report_z_view_form" model="ir.ui.view">
+        <field name="name">pos.report.z.view.form</field>
+        <field name="model">pos.report.z</field>
+        <field name="arch" type="xml">
+            <form string="Reporte Z">
+                <header>
+                    <button name="action_done" string="Validar" type="object" class="oe_highlight" invisible="state != 'draft'"/>
+                    <!-- <button name="action_draft" string="Pasar a Borrador" type="object" class="oe_highlight" attrs="{'invisible': [('state', '!=', 'done')]}"/> -->
+                    <field name="state" widget="statusbar" statusbar_visible="draft,done"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group string="Información General">
+                            <field name="number" />
+                            <!-- <field name="serial_fiscal_pos" /> -->
+                            <!-- <field name="x_fiscal_printer_code"/> -->
+                            <!-- <field name="connection_type" invisible="1"/> -->
+                            <field name="date"/>
+                            <field name="pos_session_ids" widget="many2many_tags"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                        <group string="Período y Tickets">
+                            <field name="date_start" readonly="1"/>
+                            <field name="date_end" readonly="1"/>
+                            <field name="ticket_fiscal_desde" readonly="1"/>
+                            <field name="ticket_fiscal_hasta" readonly="1"/>
+                        </group>
+                    </group>
+
+                    <separator string="Totales POS"/>
+                    <div class="row mt-3">
+                        <div class="col-lg-4 col-md-12">
+                            <group string="Facturación (16% y Exento)">
+                                <field name="total_exempt_pos"/>
+                                <field name="total_base_iva_16_pos"/>
+                                <field name="total_iva_16_pos"/>
+                            </group>
+                        </div>
+                        <div class="col-lg-4 col-md-12">
+                            <group string="Facturación (8% y 31%)">
+                                <field name="total_base_iva_8_pos"/>
+                                <field name="total_iva_8_pos"/>
+                                <field name="total_base_iva_31_pos"/>
+                                <field name="total_iva_31_pos"/>
+                            </group>
+                        </div>
+                        <div class="col-lg-4 col-md-12">
+                            <group string="Notas de Crédito (NC)">
+                                <field name="total_exempt_pos_nc"/>
+                                <field name="total_base_iva_16_pos_nc"/>
+                                <field name="total_iva_16_pos_nc"/>
+                                <field name="total_base_iva_8_pos_nc"/>
+                                <field name="total_iva_8_pos_nc"/>
+                                <field name="total_base_iva_31_pos_nc"/>
+                                <field name="total_iva_31_pos_nc"/>
+                            </group>
+                        </div>
+                    </div>
+                    
+                    <notebook>
+                        <!-- Nueva Pestaña para Tickets Fiscales -->
+                        <page string="Facturas Fiscales">
+                            <field name="ticket_fiscal_ids" widget="many2many_tags" options="{'no_create': True}"/>
+                        </page>
+                        <page string="Detalle de ventas POS">
+                            <field name="pos_order_ids" nolabel="1" readonly="1" force_save="1"/>
+
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- vista lista de pos.report.z -->
+    <record id="pos_report_z_view_list" model="ir.ui.view">
+        <field name="name">pos.report.z.view.list</field>
+        <field name="model">pos.report.z</field>
+        <field name="arch" type="xml">
+            <list string="Reportes Z">
+                <field name="number"/>
+                <field name="date"/>
+                <field name="total_exempt" string="Total Exento"/>
+                <field name="total_base_iva_16" string="Total Base Imponible 16%"/>
+                <field name="total_iva_16" string="Total IVA 16%"/>
+                <!-- Nuevos campos para 8% y 31% en POS -->
+                <field name="total_base_iva_8_pos"/>
+                <field name="total_iva_8_pos"/>
+                <field name="total_base_iva_31_pos"/>
+                <field name="total_iva_31_pos"/>
+                <!-- Nuevos campos para 8% y 31% NC en POS -->
+                <field name="total_base_iva_8_pos_nc"/>
+                <field name="total_iva_8_pos_nc"/>
+                <field name="total_base_iva_31_pos_nc"/>
+                <field name="total_iva_31_pos_nc"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <field name="state"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- accion para pos.report.z -->
+    <record id="pos_report_z_action" model="ir.actions.act_window">
+        <field name="name">Reportes Z</field>
+        <field name="res_model">pos.report.z</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="pos_report_z_view_list"/>
+    </record>
+
+    <!-- regla multi compañia para pos.report.z -->
+    <record id="pos_report_z_rule" model="ir.rule">
+        <field name="name">pos.report.z rule</field>
+        <field name="model_id" ref="model_pos_report_z"/>
+        <field name="global" eval="True"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+
+    <!-- menu para pos.report.z -->
+    <menuitem id="pos_report_z_menu" name="Reportes Z" parent="point_of_sale.menu_point_root" action="pos_report_z_action"/>
+
+</odoo>

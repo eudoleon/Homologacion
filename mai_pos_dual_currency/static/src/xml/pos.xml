@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates id="template" xml:space="preserve">
+
+    <!-- 1. VAT en Botón de Cliente (PaymentScreenButtons) -->
+    <t t-name="mai_pos_dual_currency.PaymentScreenButtons" t-inherit="point_of_sale.PaymentScreenButtons" t-inherit-mode="extension">
+        <xpath expr="//span[hasclass('partner-name')]" position="inside">
+            <t t-set="order" t-value="currentOrder || this.currentOrder || env.services.pos.get_order()"/>
+            <t t-if="order and order.getPartner and order.getPartner() and order.getPartner().vat">
+                <br/>
+                <span class="partner-vat text-warning" style="font-size: 0.85em; font-weight: bold;">
+                    <t t-esc="order.getPartner().vat" />
+                </span>
+            </t>
+        </xpath>
+        <xpath expr="//button[hasclass('js_invoice')]//t[@t-if='pos.config.canInvoice']" position="replace">
+            <t t-if="pos.config.canInvoice">Factura</t>
+        </xpath>
+    </t>
+
+    <!-- 2. Tarjeta de Producto (ProductCard) -->
+    <t t-name="mai_pos_dual_currency.ProductCard" t-inherit="point_of_sale.ProductCard" t-inherit-mode="extension">
+        <xpath expr="//article" position="inside">
+            <t t-set="pos" t-value="this.pos || env.services.pos"/>
+            <t t-if="pos and pos.config and pos.config.show_dual_currency">
+                <t t-set="product" t-value="props.product"/>
+                <t t-if="product">
+                    <t t-set="price_other_currency" t-value="((product.lst_price || product.list_price || 0) * pos.config.show_currency_rate)"/>
+                    <t t-set="symbol_other" t-value="(pos.config.show_currency_symbol == '$' || pos.config.show_currency_symbol == '$' || !pos.config.show_currency_symbol) ? 'REF ' : (pos.config.show_currency_symbol + ' ')"/>
+                    <div class="currency-bottom-badge">
+                        <t t-esc="env.utils.formatCurrency(product.lst_price || product.list_price || 0)"/> / 
+                        <t t-if="pos.config.show_currency_position == 'before'">
+                            <t t-esc="symbol_other"/>
+                        </t>
+                        <t t-esc="env.utils.formatCurrency(price_other_currency, false)"/>
+                        <t t-if="pos.config.show_currency_position == 'after'">
+                            <t t-esc="symbol_other"/>
+                        </t>
+                    </div>
+                </t>
+            </t>
+        </xpath>
+    </t>
+
+    <!-- 3. Línea de Pedido (Orderline) -->
+    <t t-name="mai_pos_dual_currency.Orderline" t-inherit="point_of_sale.Orderline" t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('product-price')]" position="replace">
+            <t t-set="pos" t-value="this.pos || env.services.pos"/>
+            <div class="orderline-price-container d-flex flex-column align-items-end text-end ms-2">
+                <div t-if="vals.price" t-out="vals.price" class="product-price price" t-attf-class="{{ vals.isReceipt ? 'font-monospace' : 'fw-bolder' }}"/>
+                <div t-if="pos and pos.config and pos.config.show_dual_currency and line and !line.combo_parent_id and !line.combo_item_id and !line.combo_parent_uuid" class="usd-price text-end font-monospace" style="font-size: 0.82rem; font-weight: 600; color: #475569; line-height: 1.1;">
+                    <t t-set="subtotal_other_currency" t-value="((line.displayPrice || 0) * pos.config.show_currency_rate)"/>
+                    <t t-set="symbol_other" t-value="(pos.config.show_currency_symbol == '$' || !pos.config.show_currency_symbol) ? 'REF ' : (pos.config.show_currency_symbol + ' ')"/>
+                    <t t-if="pos.config.show_currency_position == 'before'">
+                        <t t-esc="symbol_other"/>
+                    </t>
+                    <t t-esc="env.utils.formatCurrency(subtotal_other_currency, false)"/>
+                    <t t-if="pos.config.show_currency_position == 'after'">
+                        <t t-esc="symbol_other"/>
+                    </t>
+                </div>
+            </div>
+        </xpath>
+    </t>
+
+    <!-- 4. Resumen de Orden (OrderDisplay) -->
+    <t t-name="mai_pos_dual_currency.OrderDisplay" t-inherit="point_of_sale.OrderDisplay" t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('order-summary')]" position="replace">
+            <t t-set="pos" t-value="this.pos || env.services.pos"/>
+            <t t-if="pos and pos.config and pos.config.show_dual_currency and order">
+                <div t-if="props.mode !== 'receipt'" class="order-summary d-flex flex-column p-3 border-top bg-view shadow-sm" style="width: 100%; border-radius: 8px 8px 0 0;">
+                    <t t-set="symbol_other" t-value="(pos.config.show_currency_symbol == '$' || !pos.config.show_currency_symbol) ? 'REF ' : (pos.config.show_currency_symbol + ' ')"/>
+                    <t t-set="subtotal_usd" t-value="((order.priceExcl || 0) * pos.config.show_currency_rate)"/>
+                    <t t-set="tax_usd" t-value="((order.amountTaxes || 0) * pos.config.show_currency_rate)"/>
+                    <t t-set="total_usd" t-value="((order.priceIncl || 0) * pos.config.show_currency_rate)"/>
+
+                    <div class="row g-2 w-100 m-0">
+                        <!-- Columna Referencia (REF / USD) -->
+                        <div class="col-6 d-flex flex-column pe-2 border-end">
+                            <div class="d-flex justify-content-between w-100 text-muted" style="font-size: 0.82rem;">
+                                <span>Subtotal:</span>
+                                <span class="fw-semibold">
+                                    <t t-if="pos.config.show_currency_position == 'before'"><t t-esc="symbol_other"/></t>
+                                    <t t-esc="env.utils.formatCurrency(subtotal_usd, false)"/>
+                                    <t t-if="pos.config.show_currency_position == 'after'"><t t-esc="symbol_other"/></t>
+                                </span>
+                            </div>
+                            <div t-if="order.prices.taxDetails.has_tax_groups" class="d-flex justify-content-between w-100 text-muted" style="font-size: 0.82rem;">
+                                <span>Impuestos:</span>
+                                <span class="fw-semibold">
+                                    <t t-if="pos.config.show_currency_position == 'before'"><t t-esc="symbol_other"/></t>
+                                    <t t-esc="env.utils.formatCurrency(tax_usd, false)"/>
+                                    <t t-if="pos.config.show_currency_position == 'after'"><t t-esc="symbol_other"/></t>
+                                </span>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center w-100 mt-2 pt-1 border-top">
+                                <span class="fw-bold" style="font-size: 1.05rem;">Total:</span>
+                                <span class="fw-bold" style="font-size: 1.15rem; color: #1e293b;">
+                                    <t t-if="pos.config.show_currency_position == 'before'"><t t-esc="symbol_other"/></t>
+                                    <t t-esc="env.utils.formatCurrency(total_usd, false)"/>
+                                    <t t-if="pos.config.show_currency_position == 'after'"><t t-esc="symbol_other"/></t>
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Columna Bolívares (Bs.F) -->
+                        <div class="col-6 d-flex flex-column ps-2">
+                            <div class="d-flex justify-content-between w-100 text-muted" style="font-size: 0.82rem;">
+                                <span>Subtotal:</span>
+                                <span class="fw-semibold"><t t-esc="order.currencyDisplayPriceExcl"/></span>
+                            </div>
+                            <div t-if="order.prices.taxDetails.has_tax_groups" class="d-flex justify-content-between w-100 text-muted" style="font-size: 0.82rem;">
+                                <span>Impuestos:</span>
+                                <span class="fw-semibold"><t t-esc="order.currencyAmountTaxes"/></span>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center w-100 mt-2 pt-1 border-top">
+                                <span class="fw-bold" style="font-size: 1.05rem;">Total:</span>
+                                <span class="fw-bold text-dark" style="font-size: 1.15rem;">
+                                    <t t-esc="order.currencyDisplayPriceIncl"/>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </t>
+            <t t-else="">
+                <div t-if="props.mode !== 'receipt'" class="order-summary d-flex flex-column gap-1 p-2 border-bottom fw-bolder lh-sm">
+                    <div t-if="this.order.config_id.iface_tax_included != 'total' and order.prices.taxDetails.has_tax_groups" class="tax-info subentry d-flex justify-content-between w-100 fs-6 text-muted">
+                        <span>Subtotal</span>
+                        <span t-esc="order.currencyDisplayPriceExcl" class="subtotal"/>
+                    </div>
+                    <div t-if="order.prices.taxDetails.has_tax_groups" class="tax-info subentry d-flex justify-content-between w-100 fs-6 text-muted">
+                        Taxes
+                        <div id="order-widget-taxes">
+                            <span t-esc="order.currencyAmountTaxes" class="tax"/>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-between w-100 fs-3">
+                        <span>Total</span>
+                        <span t-esc="order.currencyDisplayPriceIncl" class="total"/>
+                    </div>
+                </div>
+            </t>
+        </xpath>
+    </t>
+
+    <!-- 5. Total a Pagar en Pantalla de Pagos (PaymentScreenDue) -->
+    <t t-name="mai_pos_dual_currency.PaymentScreenDue" t-inherit="point_of_sale.PaymentScreenDue" t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('total')]" position="inside">
+            <t t-set="pos" t-value="this.pos || env.services.pos"/>
+            <t t-set="order" t-value="currentOrder || this.currentOrder"/>
+            <div t-if="pos and pos.config and pos.config.show_dual_currency and order" class="usd-total-due mt-2 text-danger fw-bold" style="line-height: 1.2;">
+                <!-- Tasa BCV Pequeña -->
+                <div style="font-size: 0.25em; color: #198754; font-weight: normal;">
+                    <t t-set="rate_value" t-value="pos.config.show_currency_rate ? (1 / pos.config.show_currency_rate) : 0"/>
+                    Tasa BCV: <t t-esc="env.utils.formatCurrency(rate_value, false)"/>
+                </div>
+                <!-- Total en Dólares -->
+                <div style="font-size: 0.4em;">
+                    /
+                    <t t-set="total_other_currency" t-value="(order.totalDue * pos.config.show_currency_rate)"/>
+                    <t t-set="symbol_other" t-value="(pos.config.show_currency_symbol == '$' || pos.config.show_currency_symbol == '$' || !pos.config.show_currency_symbol) ? 'REF ' : (pos.config.show_currency_symbol + ' ')"/>
+                    <t t-if="pos.config.show_currency_position == 'before'">
+                        <t t-esc="symbol_other"/>
+                    </t>
+                    <t t-esc="env.utils.formatCurrency(total_other_currency, false)"/>
+                    <t t-if="pos.config.show_currency_position == 'after'">
+                        <t t-esc="symbol_other"/>
+                    </t>
+                </div>
+            </div>
+        </xpath>
+    </t>
+
+    <!-- 6. Líneas de Pago en Pantalla de Pagos (PaymentScreenPaymentLines)
+         Línea normal (Bs):  importe en Bs  + (equivalente REF)
+         Línea en USD:       importe en REF + (equivalente Bs)
+         El core tiene dos bloques .payment-amount: [1] línea seleccionada y [2] no seleccionada. -->
+    <t t-name="mai_pos_dual_currency.PaymentScreenPaymentLines" t-inherit="point_of_sale.PaymentScreenPaymentLines" t-inherit-mode="extension" owl="1">
+        <!-- [2] Línea NO seleccionada (se procesa primero para no alterar los índices) -->
+        <xpath expr="(//div[hasclass('payment-amount')])[2]" position="replace">
+            <t t-set="pos" t-value="this.pos || env.services.pos"/>
+            <t t-set="symbol_usd" t-value="(pos.config.show_currency_symbol == '$' || !pos.config.show_currency_symbol) ? 'REF' : pos.config.show_currency_symbol"/>
+            <t t-if="pos and pos.config and pos.config.show_dual_currency">
+                <div class="usd-price text-muted font-monospace me-2 d-flex align-items-center" style="font-size: 0.85em; font-weight: 600; white-space: nowrap;">
+                    <t t-if="line.isUsdPayment">
+                        (<t t-esc="env.utils.formatCurrency(line.getAmount())"/>)
+                    </t>
+                    <t t-else="">
+                        (<t t-esc="symbol_usd"/> <t t-esc="env.utils.formatCurrency(line.getAmount() * pos.config.show_currency_rate, false)"/>)
+                    </t>
+                </div>
+            </t>
+            <div class="payment-amount px-3">
+                <PriceFormatter price="line.isUsdPayment ? (env.utils.formatCurrency(line.usdAmount, false) + ' ' + symbol_usd) : env.utils.formatCurrency(line.getAmount())" />
+            </div>
+        </xpath>
+        <!-- [1] Línea seleccionada -->
+        <xpath expr="(//div[hasclass('payment-amount')])[1]" position="replace">
+            <t t-set="pos" t-value="this.pos || env.services.pos"/>
+            <t t-set="symbol_usd" t-value="(pos.config.show_currency_symbol == '$' || !pos.config.show_currency_symbol) ? 'REF' : pos.config.show_currency_symbol"/>
+            <t t-if="pos and pos.config and pos.config.show_dual_currency">
+                <div class="usd-price text-muted font-monospace me-2 d-flex align-items-center" style="font-size: 0.85em; font-weight: 600; white-space: nowrap;">
+                    <t t-if="line.isUsdPayment">
+                        (<t t-esc="env.utils.formatCurrency(line.getAmount())"/>)
+                    </t>
+                    <t t-else="">
+                        (<t t-esc="symbol_usd"/> <t t-esc="env.utils.formatCurrency(line.getAmount() * pos.config.show_currency_rate, false)"/>)
+                    </t>
+                </div>
+            </t>
+            <div class="payment-amount px-3">
+                <PriceFormatter price="line.isUsdPayment ? (env.utils.formatCurrency(line.usdAmount, false) + ' ' + symbol_usd) : env.utils.formatCurrency(line.getAmount())" />
+            </div>
+        </xpath>
+    </t>
+
+</templates>

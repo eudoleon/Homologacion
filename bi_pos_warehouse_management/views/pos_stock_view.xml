@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+		<record model="ir.ui.view" id="custom_bi_pos_discount_form_view_inherit">
+        <field name="name">res.config.setting.form.extended.view</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="point_of_sale.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//app[@name='point_of_sale']" position='inside'>
+                <block title="Warehouse Configuration" id="multi_shop">
+                    <setting help="Display Stock in POS">
+                        <field name="pos_display_stock_pos"/>
+                    </setting>
+                    <setting help="Default Stock locations" invisible="not pos_display_stock_pos">
+                        <field name="pos_stock_location_id" required="pos_display_stock_pos"/>
+                    </setting>
+                    <setting help="Warehouse available locations" invisible="not pos_display_stock_pos">
+                        <field name="pos_warehouse_available_ids" widget="many2many_tags" required="pos_display_stock_pos"/>
+                    </setting>
+                </block>
+            </xpath>
+        </field>
+    </record>
+
+		
+		<!-- Removed inherit_view_pos_order_related_pickings to prevent validation error in Odoo 19 -->
+
+		<record id="product_variant_quants" model="ir.ui.view">
+			<field name="name">product.variant.quants.view.form</field>
+			<field name="model">product.product</field>
+			<field name="inherit_id" ref="product.product_normal_form_view" />
+			<field name="arch" type="xml">
+				<field name="categ_id" position="after">
+					<field name="quant_text" invisible="1"/>
+					<field name="quant_ids" invisible="1">
+					</field>
+				</field>
+			</field>
+		</record>
+
+	</data>
+</odoo>

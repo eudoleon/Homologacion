@@ -1,0 +1,39 @@
+/* pos.css */
+
+/* Ocultar botón de Precio en el teclado numérico sin romper la cuadrícula */
+.numpad button.numpad-button[value="Precio"],
+.numpad button.numpad-button[value="Price"] {
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
+
+/* Ocultar sección de "¿Necesita factura?" y el código QR del recibo por si acaso */
+.pos-receipt .pos-receipt-order-data,
+.pos-receipt .pos-receipt-invoice-request,
+.pos-receipt-qr, #pos-receipt-qr {
+    display: none !important;
+}
+
+/* Ocultar el campo de correo electrónico en la pantalla de recibos (ReceiptScreen) */
+.send-receipt-email-input,
+.send-receipt-email-input + div {
+    display: none !important;
+}
+
+/* Ocultar el recibo completo en la pantalla de finalización de Odoo 19 */
+.receipt-screen .pos-receipt-container,
+.receipt-screen .pos-receipt,
+.pos-receipt-print {
+    display: none !important;
+}
+
+/* Ocultar el precio nativo en la tarjeta del producto, ya que el badge de dual currency ahora lo incluye */
+.product-card .price-tag, 
+.product-card .product-price {
+    display: none !important;
+}
+
+/* Asegurar que la tarjeta de producto tiene relative para que el position-absolute funcione */
+article.product, .product-card {
+    position: relative !important;
+}

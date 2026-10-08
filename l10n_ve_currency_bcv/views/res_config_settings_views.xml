@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="res_config_settings_view_form_inherit_bcv" model="ir.ui.view">
+            <field name="name">res.config.settings.view.form.inherit.bcv</field>
+            <field name="model">res.config.settings</field>
+            <field name="priority" eval="40"/>
+            <field name="inherit_id" ref="account.res_config_settings_view_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//block[@name='main_currency_setting_container']" position="inside">
+                    <setting id="bcv_currencies" string="Tasa Automática BCV" help="Usa la tasa de cambio del Banco Central de Venezuela." company_dependent="1">
+                        <field name="currency_rate_bcv"/>
+                        <div class="content-group" invisible="not currency_rate_bcv">
+                            <div class="row mt16">
+                                <label for="currency_available_ids" class="col-lg-3 o_light_label"/>
+                                <field name="currency_available_ids" widget="many2many_tags" placeholder="Selecciona monedas..."/>
+                            </div>
+                        </div>
+                    </setting>
+                    <setting id="bcv_block_days" string="Bloqueo de Días y Feriados BCV" help="Bloquea la actualización en días específicos o feriados." company_dependent="1">
+                        <field name="block_days_bcv"/>
+                        <div class="content-group" invisible="not block_days_bcv">
+                            <div class="row mt16">
+                                <label for="days_bcv_ids" class="col-lg-3 o_light_label"/>
+                                <field name="days_bcv_ids" widget="many2many_tags" options="{'no_create': True, 'no_open': True}" placeholder="Selecciona días..."/>
+                            </div>
+                        </div>
+                        <div class="mt8">
+                            <button name="%(l10n_ve_currency_bcv.action_currency_bcv_form_holidays)d" icon="fa-arrow-right" type="action" string="Días feriados bancarios" class="btn-link"/>
+                        </div>
+                    </setting>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

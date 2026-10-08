@@ -1,0 +1,12 @@
+<odoo>
+    <record id="view_partner_form_vat_retention" model="ir.ui.view">
+        <field name="name">res.partner.form.vat.retention</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='vat']" position="after">
+                <field name="vat_retention_rate"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

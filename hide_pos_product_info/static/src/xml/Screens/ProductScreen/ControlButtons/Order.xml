@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates id="template" xml:space="preserve">
+    <t t-name="hide_pos_product_info.SubmitOrderButton" t-inherit="pos_restaurant.SubmitOrderButton" t-inherit-mode="extension" owl="1">
+        <xpath expr="//span[normalize-space(text())='Order']" position="replace">
+            <span>Preparar en Cocina</span>
+        </xpath>
+    </t>
+</templates>

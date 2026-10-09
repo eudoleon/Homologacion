@@ -133,10 +133,18 @@ class IrRule(models.Model):
                 group_domains.append(dom)
 
         # combine global domains and group domains
-        if not group_domains:
-            res_domain = expression.AND(global_domains)
-        else:
-            res_domain = expression.AND(global_domains + [expression.OR(group_domains)])
+        try:
+            from odoo.fields import Domain
+            if not group_domains:
+                res_domain = Domain.and_(global_domains) if hasattr(Domain, 'and_') else expression.AND(global_domains)
+            else:
+                group_or = Domain.or_(group_domains) if hasattr(Domain, 'or_') else expression.OR(group_domains)
+                res_domain = Domain.and_(global_domains + [group_or]) if hasattr(Domain, 'and_') else expression.AND(global_domains + [group_or])
+        except Exception:
+            if not group_domains:
+                res_domain = expression.AND(global_domains)
+            else:
+                res_domain = expression.AND(global_domains + [expression.OR(group_domains)])
             
         base_domain = super(IrRule, self)._compute_domain(model_name, mode=mode)
         DomainClass = None

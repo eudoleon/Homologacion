@@ -9,24 +9,26 @@ class accessDatasetInherit(DataSet):
 
     @http.route(['/web/dataset/call_kw', '/web/dataset/call_kw/<path:path>'], type='json', auth="user")
     def call_kw(self, model, method, args, kwargs, path=None):
+        uid = (request.env.user.id if request and hasattr(request, 'env') and request.env.user else (request.session.uid if request and hasattr(request, 'session') else False))
         # If system is readonly then restrict rpc calls
-        if method in ['create', 'write', 'unlink'] and request.env['user.management'].sudo().search(
+        if uid and method in ['create', 'write', 'unlink'] and request.env['user.management'].sudo().search(
                 [('access_readonly', '=', True),
-                 ('access_user_ids', '=', request.context.get('uid')),
-                 ('active', '=', True)]):
+                 ('access_user_ids', 'in', [uid]),
+                 ('active', '=', True)], limit=1):
             raise AccessError(_("No tienes permisos para crear, editar o eliminar registros en este momento."))
 
         profile_management = request.env['model.access'].sudo().search(
             [('access_model_id.model', '=', model),
-             ('access_user_manager_id.access_user_ids', '=', request.context.get('uid')),
-             ('access_user_manager_id.active', '=', True)], limit=1)
+             ('access_user_manager_id.access_user_ids', 'in', [uid]),
+             ('access_user_manager_id.active', '=', True)], limit=1) if uid else False
 
-        if method == 'create' and profile_management.access_hide_create:
-            raise AccessError(_("No tienes permisos para crear registros en este modelo."))
-        elif method == 'write' and profile_management.access_hide_edit:
-            raise AccessError(_("No tienes permisos para editar registros en este modelo."))
-        elif method == 'unlink' and profile_management.access_hide_delete:
-            raise AccessError(_("No tienes permisos para eliminar registros en este modelo."))
+        if profile_management:
+            if method == 'create' and profile_management.access_hide_create:
+                raise AccessError(_("No tienes permisos para crear registros en este modelo."))
+            elif method == 'write' and profile_management.access_hide_edit:
+                raise AccessError(_("No tienes permisos para editar registros en este modelo."))
+            elif method == 'unlink' and profile_management.access_hide_delete:
+                raise AccessError(_("No tienes permisos para eliminar registros en este modelo."))
             
         return super(accessDatasetInherit, self).call_kw(model, method, args, kwargs, path=path)
 

@@ -47,24 +47,32 @@ class accessAccessManagement(models.Model):
             self.is_profile = True
         else:
             self.is_profile = False
-        self.access_user_ids = [(6, 0, self.access_profile_ids.mapped('access_user_ids').ids)]
-        self.access_user_rel_ids = [(6, 0, self.access_profile_ids.mapped('access_user_ids').ids)]
-        access_rights = []
-        record_rules = []
-        model_ids = []
+        user_ids = self.access_profile_ids.mapped('access_user_ids').ids
+        self.access_user_ids = [(6, 0, user_ids)]
+        self.access_user_rel_ids = [(6, 0, user_ids)]
+        access_rights = set()
+        record_rules = set()
+        model_ids = set()
         for profile in self.access_profile_ids:
-            while True:
-                access_rights += profile.mapped('implied_ids').model_access.ids
-                record_rules += profile.mapped('implied_ids').rule_groups.ids
-                model_ids.extend(profile.mapped('implied_ids').model_access.mapped('model_id').ids)
-                if profile.implied_ids:
-                    profile = profile.implied_ids
-                else:
-                    break
-        record_rules += self.env['res.groups'].sudo().search([('custom', '=', True)]).mapped('rule_groups').ids
-        self.access_ir_model_access = [(6, 0, access_rights)]
-        self.access_ir_rule = [(6, 0, record_rules)]
-        self.access_profile_domain_model = [(6, 0, model_ids)]
+            groups = profile.implied_ids
+            if hasattr(groups, 'trans_implied_ids'):
+                groups = groups | groups.trans_implied_ids
+            else:
+                visited = set()
+                curr = groups
+                while curr and (set(curr.ids) - visited):
+                    visited.update(curr.ids)
+                    curr = curr.mapped('implied_ids')
+                groups = self.env['res.groups'].browse(visited)
+            access_rights.update(groups.mapped('model_access').ids)
+            record_rules.update(groups.mapped('rule_groups').ids)
+            model_ids.update(groups.mapped('model_access.model_id').ids)
+
+        custom_rules = self.env['res.groups'].sudo().search([('custom', '=', True)]).mapped('rule_groups').ids
+        record_rules.update(custom_rules)
+        self.access_ir_model_access = [(6, 0, list(access_rights))]
+        self.access_ir_rule = [(6, 0, list(record_rules))]
+        self.access_profile_domain_model = [(6, 0, list(model_ids))]
 
     @api.constrains('name')
     def check_name(self):
@@ -79,48 +87,61 @@ class accessAccessManagement(models.Model):
         res = super(accessAccessManagement, self).create(vals_list)
         return res
 
-    @api.depends('access_users_count')
+    @api.depends('access_user_ids')
     def _compute_users_count(self):
         """Compute total user which is selected inside selected profiles"""
         for rec in self:
-            rec.access_users_count = len(self.access_user_ids)
+            rec.access_users_count = len(rec.access_user_ids)
 
-    @api.depends('access_profile_based_menu', 'access_profile_ids')
+    @api.depends('access_profile_ids', 'access_profile_ids.implied_ids')
     def _compute_profile_based_menu(self):
         """Compute menu which is for the selected profile"""
-        visible_menu_ids = []
-        for rec in self.access_profile_ids:
-            last_group = rec.implied_ids
-            while True:
-                if last_group:
-                    visible_menu_ids.extend(last_group.menu_access.ids)
-                    last_group = last_group.implied_ids
+        for rec in self:
+            visible_menu_ids = set()
+            for profile in rec.access_profile_ids:
+                groups = profile.implied_ids
+                if hasattr(groups, 'trans_implied_ids'):
+                    groups = groups | groups.trans_implied_ids
                 else:
-                    break
-        self.sudo().write({'access_profile_based_menu': [(6, 0, list(set(visible_menu_ids)))]})
+                    visited = set()
+                    curr = groups
+                    while curr and (set(curr.ids) - visited):
+                        visited.update(curr.ids)
+                        curr = curr.mapped('implied_ids')
+                    groups = self.env['res.groups'].browse(visited)
+                visible_menu_ids.update(groups.mapped('menu_access').ids)
+            rec.access_profile_based_menu = [(6, 0, list(visible_menu_ids))]
 
     @api.depends('access_profile_ids', 'access_profile_ids.access_user_ids')
     def access_compute_profile_ids(self):
         """Compute profiles users and access rights and domain for selected profile model"""
         for rec in self:
-            rec.access_user_ids = [(6, 0, rec.access_profile_ids.mapped('access_user_ids').ids)]
-            rec.access_user_rel_ids = [(6, 0, rec.access_profile_ids.mapped('access_user_ids').ids)]
-            access_rights = []
-            record_rules = []
-            model_ids = []
+            user_ids = rec.access_profile_ids.mapped('access_user_ids').ids
+            rec.access_user_ids = [(6, 0, user_ids)]
+            rec.access_user_rel_ids = [(6, 0, user_ids)]
+            access_rights = set()
+            record_rules = set()
+            model_ids = set()
             for profile in rec.access_profile_ids:
-                while True:
-                    access_rights += profile.mapped('implied_ids').model_access.ids
-                    record_rules += profile.mapped('implied_ids').rule_groups.ids
-                    model_ids.extend(profile.mapped('implied_ids').model_access.mapped('model_id').ids)
-                    if profile.implied_ids:
-                        profile = profile.implied_ids
-                    else:
-                        break
-            record_rules += self.env['res.groups'].sudo().search([('custom', '=', True)]).mapped('rule_groups').ids
-            rec.access_ir_model_access = [(6, 0, access_rights)]
-            rec.access_ir_rule = [(6, 0, record_rules)]
-            self.access_profile_domain_model = [(6, 0, model_ids)]
+                groups = profile.implied_ids
+                if hasattr(groups, 'trans_implied_ids'):
+                    groups = groups | groups.trans_implied_ids
+                else:
+                    visited = set()
+                    curr = groups
+                    while curr and (set(curr.ids) - visited):
+                        visited.update(curr.ids)
+                        curr = curr.mapped('implied_ids')
+                    groups = self.env['res.groups'].browse(visited)
+                access_rights.update(groups.mapped('model_access').ids)
+                record_rules.update(groups.mapped('rule_groups').ids)
+                model_ids.update(groups.mapped('model_access.model_id').ids)
+
+            custom_rules = self.env['res.groups'].sudo().search([('custom', '=', True)]).mapped('rule_groups').ids
+            record_rules.update(custom_rules)
+            rec.access_ir_model_access = [(6, 0, list(access_rights))]
+            rec.access_ir_rule = [(6, 0, list(record_rules))]
+            rec.access_profile_domain_model = [(6, 0, list(model_ids))]
 
     def write(self, vals):
         res = super(accessAccessManagement, self).write(vals)

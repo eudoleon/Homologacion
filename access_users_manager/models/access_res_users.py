@@ -175,12 +175,8 @@ class accessResUsersInherit(models.Model):
     @api.depends("access_profile_line_ids.access_profile_id")
     def _compute_profile_ids(self):
         for user in self:
-            user.sudo().write(
-                {
-                    "access_profile_ids": user.access_profile_line_ids.mapped(
-                        "access_profile_id"
-                    )
-                }
+            user.access_profile_ids = user.access_profile_line_ids.mapped(
+                "access_profile_id"
             )
 
     def access_get_enabled_profile(self):

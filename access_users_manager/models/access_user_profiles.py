@@ -71,11 +71,12 @@ class accessResUserProfiles(models.Model):
         model = (self.sudo() if self._bypass_rules() else self).browse()
         new_records = super(accessResUserProfiles, model).create(vals_list)
         new_records.sudo().access_update_users()
-        all_users = new_records.access_user_ids.ids + new_records.access_line_ids.filtered(lambda x: x.access_is_enabled).mapped(
-            'access_user_id').ids
-        new_records.sudo().write(
-            {'access_user_ids': [(6, 0, all_users)]},
-            remove_disabled_user=True)
+        for rec in new_records:
+            all_users = rec.access_user_ids.ids + rec.access_line_ids.filtered(lambda x: x.access_is_enabled).mapped(
+                'access_user_id').ids
+            rec.sudo().write(
+                {'access_user_ids': [(6, 0, list(set(all_users)))]},
+                remove_disabled_user=True)
         return new_records
 
     @api.model
@@ -103,7 +104,7 @@ class accessResUserProfiles(models.Model):
             recs.group_id.sudo().write(groups_vals)
         old_users = self.access_user_ids
         res = super(accessResUserProfiles, recs).write(vals)
-        profile_manage = self.env['user.management'].sudo().search([('access_profile_ids', '=', self.id)])
+        profile_manage = self.env['user.management'].sudo().search([('access_profile_ids', 'in', self.ids)])
         for profile in profile_manage:
             profile.access_compute_profile_ids()
         new_users = self.access_user_ids.ids
@@ -113,7 +114,7 @@ class accessResUserProfiles(models.Model):
                 if not only_profile:
                     user.access_update_group_to_user()
                 profile_line_exist = self.env['user.profile.lines'].sudo().search(
-                    [('access_user_id', '=', user.id), ('access_profile_id', '=', self.id)])
+                    [('access_user_id', '=', user.id), ('access_profile_id', 'in', self.ids)])
                 if profile_line_exist:
                     profile_line_exist.unlink()
 

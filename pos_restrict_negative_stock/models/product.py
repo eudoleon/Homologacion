@@ -22,3 +22,19 @@ class ProductProduct(models.Model):
                 else:
                     all_data[loc] = quant.quantity
             rec.quant_text = json.dumps(all_data)
+            
+    allow_pos_negative_stock = fields.Boolean(
+        string='Permitir vender en negativo en POS',
+        related='product_tmpl_id.allow_pos_negative_stock',
+        readonly=False,
+        store=True
+    )
+
+class ProductTemplate(models.Model):
+    _inherit = 'product.template'
+
+    allow_pos_negative_stock = fields.Boolean(
+        string='Permitir vender en negativo en POS',
+        default=False,
+        help="Si está marcado, se ignorará la restricción de inventario para este producto en el Punto de Venta."
+    )

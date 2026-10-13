@@ -10,6 +10,8 @@ import { _t } from "@web/core/l10n/translation";
 
 // Cache síncrono global para almacenar el stock disponible de todos los productos
 const posStockCache = {};
+// Lista de IDs de productos que permiten venderse en negativo
+let posAllowedNegativeProducts = [];
 
 /**
  * Extrae el objeto product.product real a partir de cualquier estructura de objeto o ID pasada por el POS.
@@ -79,6 +81,11 @@ function extractProduct(target, pos) {
  */
 function isStorableProduct(product) {
     if (!product) return false;
+
+    // Si tiene la opción de vender en negativo en el POS (ya sea por propiedad directa o lista de servidor)
+    if (product.allow_pos_negative_stock || posAllowedNegativeProducts.includes(parseInt(product.id))) {
+        return false;
+    }
 
     // Si tiene la propiedad is_storable definida (Odoo 18/19 o custom)
     if (product.is_storable !== undefined && product.is_storable !== null) {
@@ -236,6 +243,9 @@ patch(PosStore.prototype, {
         await super._processData(...arguments);
         if (loadedData && loadedData.pos_product_stock_map) {
             Object.assign(posStockCache, loadedData.pos_product_stock_map);
+        }
+        if (loadedData && loadedData.pos_allowed_negative_product_ids) {
+            posAllowedNegativeProducts = loadedData.pos_allowed_negative_product_ids;
         }
         if (loadedData && loadedData['product.product']) {
             loadedData['product.product'].forEach(p => {

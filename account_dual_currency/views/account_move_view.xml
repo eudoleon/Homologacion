@@ -48,22 +48,22 @@
 
             <xpath expr="//group[@class='oe_subtotal_footer']" position="before">
                 <group class="oe_subtotal_footer" invisible="not same_currency or move_type not in ('out_invoice', 'out_refund', 'in_invoice', 'in_refund', 'out_receipt', 'in_receipt')">
-                    <field name="amount_untaxed_usd_live" widget='monetary' options="{'currency_field': 'currency_id_dif'}" invisible="state != 'draft'"/>
-                    <field name="amount_tax_usd_live" widget='monetary' options="{'currency_field': 'currency_id_dif'}" invisible="state != 'draft'"/>
-                    <field name="amount_total_usd_live" class="oe_subtotal_footer_separator" widget='monetary' options="{'currency_field': 'currency_id_dif'}" invisible="state != 'draft'"/>
-                    <field name="amount_untaxed_usd" force_save="1" widget='monetary' options="{'currency_field': 'currency_id_dif'}" invisible="state == 'draft'"/>
-                    <field name="amount_tax_usd" force_save="1" widget='monetary' options="{'currency_field': 'currency_id_dif'}" invisible="state == 'draft'"/>
-                    <field name="amount_total_usd" force_save="1" class="oe_subtotal_footer_separator" widget='monetary' options="{'currency_field': 'currency_id_dif'}" invisible="state == 'draft'"/>
+                    <field name="amount_untaxed_usd_live" readonly="1" widget='monetary' options="{'currency_field': 'currency_id_dif'}" invisible="state != 'draft'"/>
+                    <field name="amount_tax_usd_live" readonly="1" widget='monetary' options="{'currency_field': 'currency_id_dif'}" invisible="state != 'draft'"/>
+                    <field name="amount_total_usd_live" readonly="1" class="oe_subtotal_footer_separator" widget='monetary' options="{'currency_field': 'currency_id_dif'}" invisible="state != 'draft'"/>
+                    <field name="amount_untaxed_usd" readonly="1" force_save="1" widget='monetary' options="{'currency_field': 'currency_id_dif'}" invisible="state == 'draft'"/>
+                    <field name="amount_tax_usd" readonly="1" force_save="1" widget='monetary' options="{'currency_field': 'currency_id_dif'}" invisible="state == 'draft'"/>
+                    <field name="amount_total_usd" readonly="1" force_save="1" class="oe_subtotal_footer_separator" widget='monetary' options="{'currency_field': 'currency_id_dif'}" invisible="state == 'draft'"/>
                     <field name="invoice_payments_widget_usd" colspan="2" nolabel="1" widget="payment"/>
-                    <field name="amount_residual_usd" force_save="1" class="oe_subtotal_footer_separator" widget='monetary' options="{'currency_field': 'currency_id_dif'}" invisible="state == 'draft'"/>
+                    <field name="amount_residual_usd" readonly="1" force_save="1" class="oe_subtotal_footer_separator" widget='monetary' options="{'currency_field': 'currency_id_dif'}" invisible="state == 'draft'"/>
                 </group>
                 <group class="oe_subtotal_footer" invisible="same_currency or move_type not in ('out_invoice', 'out_refund', 'in_invoice', 'in_refund', 'out_receipt', 'in_receipt')">
-                    <field name="amount_untaxed_bs_live" invisible="state != 'draft'"/>
-                    <field name="amount_tax_bs_live" invisible="state != 'draft'"/>
-                    <field name="amount_total_bs_live" class="oe_subtotal_footer_separator" invisible="state != 'draft'"/>
-                    <field name="amount_untaxed_bs" force_save="1" invisible="state == 'draft'"/>
-                    <field name="amount_tax_bs" force_save="1" invisible="state == 'draft'"/>
-                    <field name="amount_total_bs" force_save="1" class="oe_subtotal_footer_separator" invisible="state == 'draft'"/>
+                    <field name="amount_untaxed_bs_live" readonly="1" widget='monetary' options="{'currency_field': 'company_currency_id'}" invisible="state != 'draft'"/>
+                    <field name="amount_tax_bs_live" readonly="1" widget='monetary' options="{'currency_field': 'company_currency_id'}" invisible="state != 'draft'"/>
+                    <field name="amount_total_bs_live" readonly="1" class="oe_subtotal_footer_separator" widget='monetary' options="{'currency_field': 'company_currency_id'}" invisible="state != 'draft'"/>
+                    <field name="amount_untaxed_bs" readonly="1" force_save="1" widget='monetary' options="{'currency_field': 'company_currency_id'}" invisible="state == 'draft'"/>
+                    <field name="amount_tax_bs" readonly="1" force_save="1" widget='monetary' options="{'currency_field': 'company_currency_id'}" invisible="state == 'draft'"/>
+                    <field name="amount_total_bs" readonly="1" force_save="1" class="oe_subtotal_footer_separator" widget='monetary' options="{'currency_field': 'company_currency_id'}" invisible="state == 'draft'"/>
                     <field name="invoice_payments_widget_bs" colspan="2" nolabel="1" widget="payment"/>
                 </group>
             </xpath>

@@ -89,7 +89,7 @@ class AccountMove(models.Model):
                                               compute='_compute_payments_widget_reconciled_info_USD')
 
     amount_untaxed_bs = fields.Monetary(currency_field='company_currency_id', string="Base imponible Bs.", store=True, copy=False,
-                                         compute="_amount_all_usd")
+                                         compute="_amount_all_usd", readonly=True)
     amount_tax_bs = fields.Monetary(currency_field='company_currency_id', string="Impuestos Bs.", compute="_amount_all_usd", store=True, copy=False,
                                     readonly=True)
     amount_total_bs = fields.Monetary(currency_field='company_currency_id', string='Total Bs.', store=True,
@@ -97,12 +97,12 @@ class AccountMove(models.Model):
                                       compute='_amount_all_usd', copy=False)
 
     # Campos de vista en vivo para borrador (no dependen del ciclo de guardado).
-    amount_untaxed_usd_live = fields.Monetary(currency_field='currency_id_dif', string="Base imponible Ref.", copy=False)
-    amount_tax_usd_live = fields.Monetary(currency_field='currency_id_dif', string="Impuestos Ref.", copy=False)
-    amount_total_usd_live = fields.Monetary(currency_field='currency_id_dif', string='Total Ref.', copy=False)
-    amount_untaxed_bs_live = fields.Monetary(currency_field='company_currency_id', string="Base imponible Bs.", copy=False)
-    amount_tax_bs_live = fields.Monetary(currency_field='company_currency_id', string="Impuestos Bs.", copy=False)
-    amount_total_bs_live = fields.Monetary(currency_field='company_currency_id', string='Total Bs.', copy=False)
+    amount_untaxed_usd_live = fields.Monetary(currency_field='currency_id_dif', string="Base imponible Ref.", copy=False, readonly=True)
+    amount_tax_usd_live = fields.Monetary(currency_field='currency_id_dif', string="Impuestos Ref.", copy=False, readonly=True)
+    amount_total_usd_live = fields.Monetary(currency_field='currency_id_dif', string='Total Ref.', copy=False, readonly=True)
+    amount_untaxed_bs_live = fields.Monetary(currency_field='company_currency_id', string="Base imponible Bs.", copy=False, readonly=True)
+    amount_tax_bs_live = fields.Monetary(currency_field='company_currency_id', string="Impuestos Bs.", copy=False, readonly=True)
+    amount_total_bs_live = fields.Monetary(currency_field='company_currency_id', string='Total Bs.', copy=False, readonly=True)
 
     amount_total_signed_usd = fields.Monetary(
         string='Total Ref.',

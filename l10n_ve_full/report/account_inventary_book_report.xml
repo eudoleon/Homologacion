@@ -4,7 +4,7 @@
 
 		<record id="report_inventary_book" model="ir.actions.report">
             <field name="name">Libro de Inventario</field>
-            <field name="model">account.fiscal.book.wizard</field>
+            <field name="model">account.inventory.book.wizard</field>
             <field name="report_type">qweb-pdf</field>
             <field name="report_name">l10n_ve_full.report_invantary_book_template</field>
             <field name="report_file">l10n_ve_full.report_invantary_book_template</field>
@@ -20,7 +20,7 @@
                         <div class="text-left">
 
                             <h5 ><b>Nombre de la Empresa:</b> <span t-esc="c.name"/></h5>
-                           <h5><b>RIF.:&amp;nbsp;</b><span t-field="c.rif"/></h5>
+                           <h5><b>RIF.:&amp;nbsp;</b><span t-esc="company_rif or c.rif or (c.partner_id and c.partner_id.rif) or c.vat or ''"/></h5>
                             <h5 ><b>Dirección de la Empresa:</b><span t-esc="c.street2"/></h5>
                         </div>
                         <div class="text-center">
@@ -41,7 +41,7 @@
 							<table class="table table-sm o_main_table" >
 								<thead>
 									<tr class="margin-top: 50px">
-										<th colspan="14"  >-</th>
+										<th colspan="16"  >-</th>
 									</tr>
 
 									<tr >
@@ -50,6 +50,7 @@
 										<th colspan="3" style="border-top: 1px solid black;" class="text-center"><b>Inventario  Inicial</b></th>
 										<th colspan="3" style="border-top: 1px solid black;" class="text-center"><b>Entradas  del  Mes</b></th>
 										<th colspan="3" style="border-top: 1px solid black;" class="text-center"><b>Salidas  del  Mes</b></th>
+										<th colspan="2" style="border-top: 1px solid black;" class="text-center"><b>Autoconsumo</b></th>
 										<th colspan="3" style="border-top: 1px solid black;" class="text-center"><b>Inventario  Final</b></th>
 									</tr>
 									<tr style="font-size: x-small;">
@@ -63,6 +64,8 @@
 										<th style="border-top: 1px solid black;border-bottom: 1px solid black;" class="text-center"><b>Total Bolivares</b></th>
 										<th style="border-top: 1px solid black;border-bottom: 1px solid black;" class="text-center"><b>Cantidad Salidas</b></th>
 										<th style="border-top: 1px solid black;border-bottom: 1px solid black;" class="text-center"><b>Costo de Salidas</b></th>
+										<th style="border-top: 1px solid black;border-bottom: 1px solid black;" class="text-center"><b>Total Bolivares</b></th>
+										<th style="border-top: 1px solid black;border-bottom: 1px solid black;" class="text-center"><b>Cantidad</b></th>
 										<th style="border-top: 1px solid black;border-bottom: 1px solid black;" class="text-center"><b>Total Bolivares</b></th>
 										<th style="border-top: 1px solid black;border-bottom: 1px solid black;" class="text-center"><b>Stock Final</b></th>
 										<th style="border-top: 1px solid black;border-bottom: 1px solid black;" class="text-center"><b>Costo Promedio</b></th>
@@ -85,9 +88,31 @@
 										<td class="text-right"><span t-esc="d['salida_mes']"/></td>
 										<td class="text-right"><span t-esc="d['salida_mes_precio']" t-options='{"widget": "monetary", "display_currency": currency}'/></td>
 										<td class="text-right"><span t-esc="d['salida_mes_precio_total']" t-options='{"widget": "monetary", "display_currency": currency}'/></td>
+										<td class="text-right"><span t-esc="d['autoconsumo_qty']"/></td>
+										<td class="text-right"><span t-esc="d['autoconsumo_total']" t-options='{"widget": "monetary", "display_currency": currency}'/></td>
 										<td class="text-right"><span t-esc="d['final']"/></td>
 										<td class="text-right"><span t-esc="d['final_precio']" t-options='{"widget": "monetary", "display_currency": currency}'/></td>
 										<td class="text-right"><span t-esc="d['final_precio_total']" t-options='{"widget": "monetary", "display_currency": currency}'/></td>
+									</tr>
+									<tr t-if="datos" style="font-weight: bold; border-top: 2px solid black; border-bottom: 2px solid black;">
+										<td colspan="2" class="text-center"><b>TOTAL GENERAL</b></td>
+										<td class="text-right"><span t-esc="total_existencia_inicial"/></td>
+										<td></td>
+										<td class="text-right"><span t-esc="total_precio_inicial" t-options='{"widget": "monetary", "display_currency": currency}'/></td>
+										<td class="text-right"><span t-esc="total_entradas_mes"/></td>
+										<td></td>
+										<td class="text-right"><span t-esc="total_entradas_mes_precio" t-options='{"widget": "monetary", "display_currency": currency}'/></td>
+										<td class="text-right"><span t-esc="total_salida_mes"/></td>
+										<td></td>
+										<td class="text-right"><span t-esc="total_salida_mes_precio" t-options='{"widget": "monetary", "display_currency": currency}'/></td>
+										<td class="text-right"><span t-esc="total_autoconsumo_qty"/></td>
+										<td class="text-right"><span t-esc="total_autoconsumo_total" t-options='{"widget": "monetary", "display_currency": currency}'/></td>
+										<td class="text-right"><span t-esc="total_final"/></td>
+										<td></td>
+										<td class="text-right"><span t-esc="total_final_precio" t-options='{"widget": "monetary", "display_currency": currency}'/></td>
+									</tr>
+									<tr t-if="not datos">
+										<td colspan="16" class="text-center" style="padding: 20px;"><b>No se encontraron movimientos ni existencias para los productos y el período seleccionado.</b></td>
 									</tr>
 								<!--<t t-foreach="o.libro" t-as="k">
 									<t t-if="len(k.line_id) > 0">
@@ -195,7 +220,7 @@
 									<th  colspan="2" style="border-top: 1px solid black;" class="text-right"><b><span t-esc="o.float_format(total_general)"/></b></th>
 								</tr>-->
 								<tr>
-									<th colspan="14" style="color: white;" class="text-center">
+									<th colspan="16" style="color: white;" class="text-center">
 									--------------------------------------------------------------------------------------------------------------------------------------
 									--------------------------------------------------------------------------------------------------------------------------------------
 									--------------------------------------------------------------------------------------------------------------------------------------

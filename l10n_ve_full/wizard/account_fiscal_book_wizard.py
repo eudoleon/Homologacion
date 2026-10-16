@@ -19,7 +19,6 @@ class FiscalBookWizard(models.TransientModel):
     Sales book wizard implemented using the osv_memory wizard system
     """
     _name = "account.fiscal.book.wizard"
-    _description = 'Fiscal Book Wizard'
 
     TYPE = [("sale", _("Venta")),
             ("purchase", _("Compra")),
@@ -29,7 +28,7 @@ class FiscalBookWizard(models.TransientModel):
     def default_get(self, field_list):
 
         fiscal_book_obj = self.env['account.fiscal.book']
-        fiscal_book = fiscal_book_obj.browse(self.env.context['active_id'])
+        fiscal_book = fiscal_book_obj.browse(self._context['active_id'])
         res = super(FiscalBookWizard, self).default_get(field_list)
         local_period = fiscal_book_obj.get_time_period(fiscal_book.time_period, fiscal_book)
         res.update({'type': fiscal_book.type})
@@ -53,10 +52,13 @@ class FiscalBookWizard(models.TransientModel):
             datos_compras, datos_compras_ajustes = self.get_datas_compras()
             if not datos_compras:
                 raise UserError('No hay datos disponibles')
+            # Obtener RIF directamente del modelo de la compañía
+            company = self.env['account.fiscal.book'].browse(self.env.context['active_id']).company_id
+            company_rif = company.partner_id.rif if company.partner_id.rif else company.rif if hasattr(company, 'rif') else ''
+            
             sheet.merge_range('B3:G3', datos_compras[0]['company_name'], formats['string_titulo'])
             sheet.merge_range('M3:T3', 'Libro de Compras', formats['string_titulo'])
-            sheet.merge_range('B4:G4', datos_compras[0]['company_street'], formats['string'])
-            sheet.merge_range('B5:G5', datos_compras[0]['company_rif'], formats['string'])
+            sheet.merge_range('B4:G4', '' + (company_rif or ''), formats['string_titulo'])
             format_new = "%d/%m/%Y"
             date_start = datetime.strptime(str(self.date_start), DATE_FORMAT).date()
             date_end = datetime.strptime(str(self.date_end), DATE_FORMAT).date()
@@ -112,13 +114,29 @@ class FiscalBookWizard(models.TransientModel):
                 col += 1
                 sheet.write(row, col, d['people_type'])
                 col += 1
-                sheet.write(row, col, d['invoice_number'] if d['invoice_number'] else '', formats['string'])
+                # Lógica especial para Nro. de Factura según Tipo de Transacción
+                invoice_display = ''
+                if d['type'] not in ['02-COMP', '03-COMP']:
+                    invoice_display = d['invoice_number'] if d['invoice_number'] else ''
+                sheet.write(row, col, invoice_display, formats['string'])
                 col += 1
                 sheet.write(row, col, d['ctrl_number'], formats['string'])
                 col += 1
-                sheet.write(row, col, d['credit_affected'] if d['doc_type'] == 'N/CR' else '', formats['string'])
+                # Nro. Nota de Crédito: mostrar credit_affected O invoice_number si 03-COMP
+                credit_display = ''
+                if d['doc_type'] == 'N/CR':
+                    credit_display = d['credit_affected'] if d['credit_affected'] else ''
+                elif d['type'] == '03-COMP':
+                    credit_display = d['invoice_number'] if d['invoice_number'] else ''
+                sheet.write(row, col, credit_display, formats['string'])
                 col += 1
-                sheet.write(row, col, d['debit_affected'] if d['debit_affected'] else '', formats['string'])
+                # Nro. Nota de Débito: mostrar debit_affected O invoice_number si 02-COMP
+                debit_display = ''
+                if d['type'] == '02-COMP':
+                    debit_display = d['invoice_number'] if d['invoice_number'] else ''
+                elif d['debit_affected']:
+                    debit_display = d['debit_affected']
+                sheet.write(row, col, debit_display, formats['string'])
                 col += 1
                 sheet.write(row, col, d['type'])
                 col += 1
@@ -212,8 +230,9 @@ class FiscalBookWizard(models.TransientModel):
             sheet.merge_range('U%s:Y%s' % (row, row), 'Base Imponible', formats['title'])
             sheet.merge_range('Z%s:AC%s' % (row, row), 'Crédito Fiscal', formats['title'])
             row += 1
+            row_resumen_inicio = row
             sheet.merge_range('L%s:T%s' % (row, row), 'Compras Internas no Gravadas y/o Sin Derecho a Crédito Fiscal')
-            sheet.merge_range('U%s:Y%s' % (row, row), '0.0', formats['number'])
+            sheet.merge_range('U%s:Y%s' % (row, row), '=N%s' % row_totales, formats['number'])
             sheet.merge_range('Z%s:AC%s' % (row, row), '0.0', formats['number'])
             row += 1
             sheet.merge_range('L%s:T%s' % (row, row), 'Compras Internas gravadas por Alicuota General ')
@@ -248,142 +267,14 @@ class FiscalBookWizard(models.TransientModel):
             sheet.merge_range('L%s:T%s' % (row, row),
                               'Total Compras y Créditos Fiscales ',
                               formats['title'])
-            sheet.merge_range('U%s:Y%s' % (row, row), '=O%s' % row_totales, formats['title_number'])
-            sheet.merge_range('Z%s:AC%s' % (row, row), '=Q%s' % row_totales, formats['title_number'])
+            sheet.merge_range('U%s:Y%s' % (row, row), '=SUM(U%s:U%s)' % (row_resumen_inicio, row - 1), formats['title_number'])
+            sheet.merge_range('Z%s:AC%s' % (row, row), '=SUM(Z%s:Z%s)' % (row_resumen_inicio, row - 1), formats['title_number'])
             row += 1
             sheet.merge_range('L%s:T%s' % (row, row),
                               'Total IVA Retenido',
                               formats['title'])
             sheet.merge_range('U%s:Y%s' % (row, row), '', formats['title_number'])
             sheet.merge_range('Z%s:AC%s' % (row, row), '=AD%s' % row_totales, formats['title_number'])
-
-            row += 3
-            col = 1
-            sheet.merge_range('B%s:G%s' % (row, row), 'AJUSTE A CREDITOS FISCALES PERIODOS ANTERIORES')
-            row += 1
-            if datos_compras_ajustes:
-                for title in titles:
-                    sheet.write(row, col, title[1], formats['title'])
-                    col += 1
-                row += 1
-                col = 1
-
-                contador_datos_compras_ajustes = 1
-                row_suma_ini_ajustes = row
-                for d in datos_compras_ajustes:
-                    col = 1
-                    sheet.write(row, col, contador_datos_compras_ajustes)
-                    col += 1
-                    sheet.write(row, col, d['emission_date'])
-                    col += 1
-                    sheet.write(row, col, d['partner_vat'])
-                    col += 1
-                    sheet.write(row, col, d['partner_name'])
-                    col += 1
-                    sheet.write(row, col, d['people_type'])
-                    col += 1
-                    sheet.write(row, col, d['invoice_number'] if d['invoice_number'] else '', formats['string'])
-                    col += 1
-                    sheet.write(row, col, d['ctrl_number'], formats['string'])
-                    col += 1
-                    sheet.write(row, col, d['credit_affected'] if d['doc_type'] == 'N/CR' else '', formats['string'])
-                    col += 1
-                    sheet.write(row, col, d['debit_affected'] if d['debit_affected'] else '', formats['string'])
-                    col += 1
-                    sheet.write(row, col, d['type'])
-                    col += 1
-                    sheet.write(row, col, d['affected_invoice'] if d['affected_invoice'] else '', formats['string'])
-                    col += 1
-                    sheet.write(row, col, d['total_with_iva'], formats['number'])
-                    col += 1
-                    sheet.write(row, col, d['vat_exempt'], formats['number'])
-                    col += 1
-                    sheet.write(row, col, d['vat_general_base'], formats['number'])
-                    col += 1
-                    sheet.write(row, col, d['vat_general_rate'], formats['number'])
-                    col += 1
-                    sheet.write(row, col, d['vat_general_tax'], formats['number'])
-                    col += 1
-                    sheet.write(row, col, d['vat_reduced_base'], formats['number'])
-                    col += 1
-                    sheet.write(row, col, d['vat_reduced_rate'], formats['number'])
-                    col += 1
-                    sheet.write(row, col, d['vat_reduced_tax'], formats['number'])
-                    col += 1
-                    sheet.write(row, col, d['vat_additional_base'], formats['number'])
-                    col += 1
-                    sheet.write(row, col, d['vat_additional_rate'], formats['number'])
-                    col += 1
-                    sheet.write(row, col, d['vat_additional_tax'], formats['number'])
-                    col += 1
-                    sheet.write(row, col, d['vat_general_base_importaciones'], formats['number'])
-                    col += 1
-                    sheet.write(row, col, d['vat_general_rate_importaciones'], formats['number'])
-                    col += 1
-                    sheet.write(row, col, d['vat_general_tax_importaciones'], formats['number'])
-                    col += 1
-                    sheet.write(row, col, d['nro_planilla'], formats['string'])
-                    col += 1
-                    sheet.write(row, col, d['nro_expediente'], formats['string'])
-                    col += 1
-                    sheet.write(row, col, str(d['wh_number']), formats['number_sd'])
-                    col += 1
-                    sheet.write(row, col, d['get_wh_vat'], formats['number'])
-
-                    row += 1
-                    contador_datos_compras_ajustes += 1
-                row_suma_fin_ajustes = row
-                # imprimir totales y resumen en ajustes
-                row += 1
-                col = 11
-                sheet.write(row, col, 'TOTALES', formats['title'])
-                col = 12
-                sheet.write(row, col, '=SUM(M%s:M%s)' % (row_suma_ini_ajustes, row_suma_fin_ajustes),
-                            formats['title_number'])
-                col = 13
-                sheet.write(row, col, '=SUM(N%s:N%s)' % (row_suma_ini_ajustes, row_suma_fin_ajustes),
-                            formats['title_number'])
-                col = 14
-                sheet.write(row, col, '=SUM(O%s:O%s)' % (row_suma_ini_ajustes, row_suma_fin_ajustes),
-                            formats['title_number'])
-                col = 15
-                sheet.write(row, col, '', formats['title_number'])
-                col = 16
-                sheet.write(row, col, '=SUM(Q%s:Q%s)' % (row_suma_ini_ajustes, row_suma_fin_ajustes),
-                            formats['title_number'])
-                col = 17
-                sheet.write(row, col, '=SUM(R%s:R%s)' % (row_suma_ini_ajustes, row_suma_fin_ajustes),
-                            formats['title_number'])
-                col = 18
-                sheet.write(row, col, '', formats['title_number'])
-                col = 19
-                sheet.write(row, col, '=SUM(T%s:T%s)' % (row_suma_ini_ajustes, row_suma_fin_ajustes),
-                            formats['title_number'])
-                col = 20
-                sheet.write(row, col, '=SUM(U%s:U%s)' % (row_suma_ini_ajustes, row_suma_fin_ajustes),
-                            formats['title_number'])
-                col = 21
-                sheet.write(row, col, '', formats['title_number'])
-                col = 22
-                sheet.write(row, col, '=SUM(W%s:W%s)' % (row_suma_ini_ajustes, row_suma_fin_ajustes),
-                            formats['title_number'])
-                col = 23
-                sheet.write(row, col, '=SUM(X%s:X%s)' % (row_suma_ini_ajustes, row_suma_fin_ajustes),
-                            formats['title_number'])
-                col = 24
-                sheet.write(row, col, '', formats['title_number'])
-                col = 25
-                sheet.write(row, col, '=SUM(Z%s:Z%s)' % (row_suma_ini_ajustes, row_suma_fin_ajustes),
-                            formats['title_number'])
-                col = 26
-                sheet.write(row, col, '', formats['title_number'])
-                col = 27
-                sheet.write(row, col, '', formats['title_number'])
-                col = 28
-                sheet.write(row, col, '', formats['title_number'])
-                col = 29
-                sheet.write(row, col, '=SUM(AD%s:AD%s)' % (row_suma_ini_ajustes, row_suma_fin_ajustes),
-                            formats['title_number'])
 
             sheet.set_column('AC:AC', 15)
 
@@ -413,10 +304,13 @@ class FiscalBookWizard(models.TransientModel):
             datos_ventas, datos_ventas_ajustes = self.get_datas_ventas()
             if not datos_ventas:
                 raise UserError('No hay datos disponibles')
+            # Obtener RIF directamente del modelo de la compañía
+            company = self.env['account.fiscal.book'].browse(self.env.context['active_id']).company_id
+            company_rif = company.partner_id.rif if company.partner_id.rif else company.rif if hasattr(company, 'rif') else ''
+            
             sheet.merge_range('B3:G3', datos_ventas[0]['company_name'], formats['string_titulo'])
             sheet.merge_range('M3:T3', 'Libro de Venta', formats['string_titulo'])
-            sheet.merge_range('B4:G4', datos_ventas[0]['company_rif'], formats['string'])
-            sheet.merge_range('B5:G5', datos_ventas[0]['company_street'], formats['string'])
+            sheet.merge_range('B4:G4', 'RIF: ' + (company_rif or ''), formats['string_titulo'])
             format_new = "%d/%m/%Y"
             date_start = datetime.strptime(str(self.date_start), DATE_FORMAT).date()
             date_end = datetime.strptime(str(self.date_end), DATE_FORMAT).date()
@@ -430,23 +324,23 @@ class FiscalBookWizard(models.TransientModel):
 
             row = 6
             col = 1
-            titles = [(1, 'Nro. Op'), (2, 'Fecha Documento'), (3, 'RIF'),
-                      (4, 'Nombre ó Razón Social'),
-                      (5, 'Tipo Prov.'), (6, 'Nro. Planilla de Exportación'), (7, 'Nro. De Factura'),
-                      (8, 'Nro. De Control'),
-                      (9, 'Nro. Factura Afectada'), (10, 'Nro. Nota de Débito'),
-                      (11, 'Nro. Nota de Crédito'),
-                      (12, 'Tipo de Trans.'),
-                      (13, 'Ventas Incluyendo IVA'), (14, 'Ventas Internas ó Exportaciones No Gravadas'),
-                      (15, 'Ventas Internas ó Exportaciones Exoneradas'),
-                      (16, 'Base Imponible Alicuota General'), (17, '% Alícuota General'),
-                      (18, 'Impuesto IVA Alicuota General'),
-                      (19, 'Base Imponible Alicuota Reducida'), (20, '% Alícuota Reducida'),
-                      (21, 'Impuesto IVA Alicuota Reducida'),
-                      (22, 'Base Imponible Alicuota Adicional'), (23, '% Alícuota Adicional'),
-                      (24, 'Impuesto IVA Alicuota Adicional'),
-                      (25, 'IVA Retenido (Comprador)'),
-                      (26, 'Nro. De Comprobante'), (27, 'Fecha Comp.')]
+            titles = [(1, 'Nro. Op'), (2, 'Nro. Reporte Z'), (3, 'Fecha Documento'), (4, 'RIF'),
+                      (5, 'Nombre ó Razón Social'),
+                      (6, 'Tipo Prov.'), (7, 'Nro. Planilla de Exportación'), (8, 'Nro. De Factura'),
+                      (9, 'Nro. De Control'),
+                      (10, 'Nro. Ultima Factura'), (11, 'Nro. Factura Afectada'), (12, 'Nro. Nota de Débito'),
+                      (13, 'Nro. Nota de Crédito'),
+                      (14, 'Tipo de Trans.'),
+                      (15, 'Ventas Incluyendo IVA'), (16, 'Ventas Internas ó Exportaciones No Gravadas'),
+                      (17, 'Ventas Internas ó Exportaciones Exoneradas'),
+                      (18, 'Base Imponible Alicuota General'), (19, '% Alícuota General'),
+                      (20, 'Impuesto IVA Alicuota General'),
+                      (21, 'Base Imponible Alicuota Reducida'), (22, '% Alícuota Reducida'),
+                      (23, 'Impuesto IVA Alicuota Reducida'),
+                      (24, 'Base Imponible Alicuota Adicional'), (25, '% Alícuota Adicional'),
+                      (26, 'Impuesto IVA Alicuota Adicional'),
+                      (27, 'IVA Retenido (Comprador)'),
+                      (28, 'Nro. De Comprobante'), (29, 'Fecha Comp.')]
 
             # sheet.set_row(6, cell_format=formats['title'])
             for title in titles:
@@ -459,6 +353,8 @@ class FiscalBookWizard(models.TransientModel):
             for d in datos_ventas:
                 col = 1
                 sheet.write(row, col, contador_datos_ventas)
+                col += 1
+                sheet.write(row, col, d['report_z'] if d['report_z'] else '')
                 col += 1
                 sheet.write(row, col, d['emission_date'])
                 col += 1
@@ -473,6 +369,8 @@ class FiscalBookWizard(models.TransientModel):
                 sheet.write(row, col, d['invoice_number'] if d['invoice_number'] else '')
                 col += 1
                 sheet.write(row, col, d['ctrl_number'] if d['ctrl_number'] else '')
+                col += 1
+                sheet.write(row, col, d['n_ultima_factZ'] if d['n_ultima_factZ'] else '')
                 col += 1
                 sheet.write(row, col, d['affected_invoice'] if d['affected_invoice'] else '')
                 col += 1
@@ -518,79 +416,82 @@ class FiscalBookWizard(models.TransientModel):
             row_suma_fin = row
             # imprimir totales y resumen
             row += 1
-            col = 12
+            col = 14
             row_totales = row + 1
             sheet.write(row, col, 'TOTALES', formats['title'])
-            col = 13
-            sheet.write(row, col, '=SUM(N%s:N%s)' % (row_suma_ini, row_suma_fin), formats['title_number'])
-            col = 14
-            sheet.write(row, col, '=SUM(O%s:O%s)' % (row_suma_ini, row_suma_fin), formats['title_number'])
             col = 15
             sheet.write(row, col, '=SUM(P%s:P%s)' % (row_suma_ini, row_suma_fin), formats['title_number'])
             col = 16
             sheet.write(row, col, '=SUM(Q%s:Q%s)' % (row_suma_ini, row_suma_fin), formats['title_number'])
             col = 17
-            sheet.write(row, col, '', formats['title_number'])
+            sheet.write(row, col, '=SUM(R%s:R%s)' % (row_suma_ini, row_suma_fin), formats['title_number'])
             col = 18
             sheet.write(row, col, '=SUM(S%s:S%s)' % (row_suma_ini, row_suma_fin), formats['title_number'])
             col = 19
-            sheet.write(row, col, '=SUM(T%s:T%s)' % (row_suma_ini, row_suma_fin), formats['title_number'])
-            col = 20
             sheet.write(row, col, '', formats['title_number'])
+            col = 20
+            sheet.write(row, col, '=SUM(U%s:U%s)' % (row_suma_ini, row_suma_fin), formats['title_number'])
             col = 21
             sheet.write(row, col, '=SUM(V%s:V%s)' % (row_suma_ini, row_suma_fin), formats['title_number'])
             col = 22
-            sheet.write(row, col, '=SUM(W%s:W%s)' % (row_suma_ini, row_suma_fin), formats['title_number'])
-            col = 23
             sheet.write(row, col, '', formats['title_number'])
+            col = 23
+            sheet.write(row, col, '=SUM(X%s:X%s)' % (row_suma_ini, row_suma_fin), formats['title_number'])
             col = 24
             sheet.write(row, col, '=SUM(Y%s:Y%s)' % (row_suma_ini, row_suma_fin), formats['title_number'])
             col = 25
-            sheet.write(row, col, '=SUM(Z%s:Z%s)' % (row_suma_ini, row_suma_fin), formats['title_number'])
-            col = 26
             sheet.write(row, col, '', formats['title_number'])
+            col = 26
+            sheet.write(row, col, '=SUM(AA%s:AA%s)' % (row_suma_ini, row_suma_fin), formats['title_number'])
             col = 27
+            sheet.write(row, col, '=SUM(AB%s:AB%s)' % (row_suma_ini, row_suma_fin), formats['title_number'])
+            col = 28
+            sheet.write(row, col, '', formats['title_number'])
+            col = 29
             sheet.write(row, col, '', formats['title_number'])
 
             # resumen
             row += 4
 
-            sheet.merge_range('J%s:P%s' % (row, row), 'Resumen Libro de Ventas', formats['title'])
-            sheet.merge_range('Q%s:S%s' % (row, row), 'Base Imponible', formats['title'])
-            sheet.merge_range('T%s:V%s' % (row, row), 'Débito Fiscal', formats['title'])
-            sheet.merge_range('W%s:Y%s' % (row, row), 'IVA Retenido por el Comprador', formats['title'])
+            sheet.merge_range('L%s:R%s' % (row, row), 'Resumen de Libro de Ventas', formats['title'])
+            sheet.merge_range('S%s:U%s' % (row, row), 'Base Imponible', formats['title'])
+            sheet.merge_range('V%s:X%s' % (row, row), 'Débito Fiscal', formats['title'])
+            sheet.merge_range('Y%s:AA%s' % (row, row), 'IVA Retenido por el Comprador', formats['title'])
             row += 1
             row_resumen = row
-            sheet.merge_range('J%s:P%s' % (row, row), 'Ventas Internas Exoneradas')
-            sheet.merge_range('Q%s:S%s' % (row, row), '=O%s' % row_totales, formats['number'])
-            sheet.merge_range('T%s:V%s' % (row, row), '0.0', formats['number'])
-            sheet.merge_range('W%s:Y%s' % (row, row), '0.0', formats['number'])
+            sheet.merge_range('L%s:R%s' % (row, row), 'Ventas Internas Exoneradas')
+            sheet.merge_range('S%s:U%s' % (row, row), '=Q%s' % row_totales, formats['number'])
+            sheet.merge_range('V%s:X%s' % (row, row), '0.0', formats['number'])
+            sheet.merge_range('Y%s:AA%s' % (row, row), '0.0', formats['number'])
             row += 1
-            sheet.merge_range('J%s:P%s' % (row, row), 'Ventas de Exportación')
-            sheet.merge_range('Q%s:S%s' % (row, row), '0.0', formats['number'])
-            sheet.merge_range('T%s:V%s' % (row, row), '0.0', formats['number'])
-            sheet.merge_range('W%s:Y%s' % (row, row), '0.0', formats['number'])
+            sheet.merge_range('L%s:R%s' % (row, row), 'Ventas de Exportación')
+            sheet.merge_range('S%s:U%s' % (row, row), '0.0', formats['number'])
+            sheet.merge_range('V%s:X%s' % (row, row), '0.0', formats['number'])
+            sheet.merge_range('Y%s:AA%s' % (row, row), '0.0', formats['number'])
             row += 1
-            sheet.merge_range('J%s:P%s' % (row, row), 'Ventas Internas gravadas por Alicuota General')
-            sheet.merge_range('Q%s:S%s' % (row, row), '=Q%s' % row_totales, formats['number'])
-            sheet.merge_range('T%s:V%s' % (row, row), '=S%s' % row_totales, formats['number'])
-            sheet.merge_range('W%s:Y%s' % (row, row), '=Z%s' % row_totales, formats['number'])
+            sheet.merge_range('L%s:R%s' % (row, row), 'Ventas Internas gravadas por Alicuota General')
+            sheet.merge_range('S%s:U%s' % (row, row), '=S%s' % row_totales, formats['number'])
+            sheet.merge_range('V%s:X%s' % (row, row), '=U%s' % row_totales, formats['number'])
+            sheet.merge_range('Y%s:AA%s' % (row, row), '=AB%s' % row_totales, formats['number'])
             row += 1
-            sheet.merge_range('J%s:P%s' % (row, row),
+            sheet.merge_range('L%s:R%s' % (row, row),
                               'Ventas Internas gravadas por Alicuota General mas Alicuota Adicional ')
-            sheet.merge_range('Q%s:S%s' % (row, row), '=W%s' % row_totales, formats['number'])
-            sheet.merge_range('T%s:V%s' % (row, row), '=Y%s' % row_totales, formats['number'])
-            sheet.merge_range('W%s:Y%s' % (row, row), '0.0', formats['number'])
+            sheet.merge_range('S%s:U%s' % (row, row), '=Y%s' % row_totales, formats['number'])
+            sheet.merge_range('V%s:X%s' % (row, row), '=AA%s' % row_totales, formats['number'])
+            sheet.merge_range('Y%s:AA%s' % (row, row), '0.0', formats['number'])
             row += 1
-            sheet.merge_range('J%s:P%s' % (row, row), 'Ventas Internas gravadas por Alicuota Reducida')
-            sheet.merge_range('Q%s:S%s' % (row, row), '=T%s' % row_totales, formats['number'])
-            sheet.merge_range('T%s:V%s' % (row, row), '=V%s' % row_totales, formats['number'])
-            sheet.merge_range('W%s:Y%s' % (row, row), '0.0', formats['number'])
+            sheet.merge_range('L%s:R%s' % (row, row), 'Ventas Internas gravadas por Alicuota Reducida')
+            sheet.merge_range('S%s:U%s' % (row, row), '=V%s' % row_totales, formats['number'])
+            sheet.merge_range('V%s:X%s' % (row, row), '=X%s' % row_totales, formats['number'])
+            sheet.merge_range('Y%s:AA%s' % (row, row), '0.0', formats['number'])
             row += 1
-            sheet.merge_range('J%s:P%s' % (row, row), 'Total Ventas y Debitos Fiscales', formats['title'])
-            sheet.merge_range('Q%s:S%s' % (row, row), '=SUM(Q%s:S%s)' % (row_resumen, row - 1), formats['title_number'])
-            sheet.merge_range('T%s:V%s' % (row, row), '=SUM(T%s:V%s)' % (row_resumen, row - 1), formats['title_number'])
-            sheet.merge_range('W%s:Y%s' % (row, row), '=SUM(W%s:Y%s)' % (row_resumen, row - 1), formats['title_number'])
+            sheet.merge_range('L%s:R%s' % (row, row), 'Total Ventas y Debitos Fiscales', formats['title'])
+            sheet.merge_range('S%s:U%s' % (row, row), '=SUMA(S%s:U%s)' % (row_resumen, row - 1),
+                              formats['title_number'])
+            sheet.merge_range('V%s:X%s' % (row, row), '=SUMA(V%s:X%s)' % (row_resumen, row - 1),
+                              formats['title_number'])
+            sheet.merge_range('Y%s:AA%s' % (row, row), '=SUMA(Y%s:AA%s)' % (row_resumen, row - 1),
+                              formats['title_number'])
             row += 1
             if datos_ventas_ajustes:
                 row += 3
@@ -987,8 +888,8 @@ class FiscalBookWizard(models.TransientModel):
                 if h.doc_type == 'N/DB':
                     origin = h.affected_invoice
                     if h.invoice_id:
-                        if h.invoice_id.correlative:
-                            busq1 = self.env['account.move'].search([('correlative', '=', h.invoice_id.correlative)])
+                        if h.invoice_id.nro_ctrl:
+                            busq1 = self.env['account.move'].search([('nro_ctrl', '=', h.invoice_id.nro_ctrl)])
                             if busq1:
                                 for busq2 in busq1:
                                     if busq2.move_type == 'in_invoice':
@@ -1014,7 +915,7 @@ class FiscalBookWizard(models.TransientModel):
                     '####################### NO ES PROVEDOR INTERNACIONAL########################################################3'
 
                     if h.invoice_id:
-                        #print('tiene factura')
+                        print('tiene factura')
                         tasa = 1
                         if h.invoice_id.currency_id.name == "USD":
                             tasa = self.obtener_tasa(h.invoice_id)
@@ -1053,7 +954,7 @@ class FiscalBookWizard(models.TransientModel):
                             datetime.strptime(str(h.emission_date), DEFAULT_SERVER_DATE_FORMAT),
                             format_new)
                     if h.iwdl_id.invoice_id:
-                        #print('tiene retencion y factura')
+                        print('tiene retencion y factura')
                         tasa = 1
                         if h.iwdl_id.invoice_id.currency_id.name == "USD":
                             tasa = self.obtener_tasa(h.iwdl_id.invoice_id)
@@ -1266,8 +1167,7 @@ class FiscalBookWizard(models.TransientModel):
                         'nro_planilla': planilla,
                         'nro_expediente': expediente,
                         'company_name': h.fb_id.company_id.name,
-                        'company_rif': h.fb_id.company_id.vat,
-                        'company_street': h.fb_id.company_id.street
+                        'company_rif': h.fb_id.company_id.rif
                     })
                 else:
                     datos_compras_ajustes.append({
@@ -1308,11 +1208,10 @@ class FiscalBookWizard(models.TransientModel):
                         'nro_planilla': planilla,
                         'nro_expediente': expediente,
                         'company_name': h.fb_id.company_id.name,
-                        'company_rif': h.fb_id.company_id.vat,
-                        'company_street': h.fb_id.company_id.street
+                        'company_rif': h.fb_id.company_id.rif
                     })
 
-        return datos_compras, datos_compras_ajustes
+        return datos_compras_ajustes + datos_compras, []
 
     def get_datas_ventas(self):
         datos_ventas = []
@@ -1330,8 +1229,8 @@ class FiscalBookWizard(models.TransientModel):
             # date_start = busq.period_start
             # date_end = busq.period_end
             fbl_obj = self.env['account.fiscal.book.line'].search(
-                [('fb_id', '=', busq.id), ('accounting_date', '>=', date_start),
-                 ('accounting_date', '<=', date_end)], order='rank asc')
+                [('fb_id', '=', busq.id), ('accounting_date', '>=', date_start)
+                 ], order='rank asc')
 
             suma_total_w_iva = 0
             suma_no_taxe_sale = 0
@@ -1459,8 +1358,7 @@ class FiscalBookWizard(models.TransientModel):
                             'vat_additional_tax': vat_additional_tax,
                             'get_wh_vat': line.get_wh_vat,
                             'company_name': line.fb_id.company_id.name,
-                            'company_rif': line.fb_id.company_id.vat,
-                            'company_street': line.fb_id.company_id.street,
+                            'company_rif': line.fb_id.company_id.rif
                         })
                     else:
                         datos_ventas_ajustes.append({
@@ -1496,8 +1394,7 @@ class FiscalBookWizard(models.TransientModel):
                             'vat_additional_tax': vat_additional_tax,
                             'get_wh_vat': line.get_wh_vat,
                             'company_name': line.fb_id.company_id.name,
-                            'company_rif': line.fb_id.company_id.vat,
-                            'company_street': line.fb_id.company_id.street,
+                            'company_rif': line.fb_id.company_id.rif
                         })
                     suma_total_w_iva += line.total_with_iva
                     suma_no_taxe_sale += line.vat_exempt
@@ -1536,7 +1433,6 @@ class FiscalBookWizard(models.TransientModel):
 
 class PurchaseBook(models.AbstractModel):
     _name = 'report.l10n_ve_full.report_fiscal_purchase_book'
-    _description = 'Fiscal Purchase Book Report'
 
     @api.model
     def _get_report_values(self, docids, data=None):
@@ -1624,8 +1520,8 @@ class PurchaseBook(models.AbstractModel):
             if h.doc_type == 'N/DB':
                 origin = h.affected_invoice
                 if h.invoice_id:
-                    if h.invoice_id.correlative:
-                        busq1 = self.env['account.move'].search([('correlative', '=', h.invoice_id.correlative)])
+                    if h.invoice_id.nro_ctrl:
+                        busq1 = self.env['account.move'].search([('nro_ctrl', '=', h.invoice_id.nro_ctrl)])
                         if busq1:
                             for busq2 in busq1:
                                 if busq2.move_type == 'in_invoice':
@@ -1987,8 +1883,8 @@ class PurchaseBook(models.AbstractModel):
             'a': 0.00,
             'street': street,
             'company': purchasebook_ids.env.company,
-            'datos_compras': datos_compras,
-            'datos_compras_ajustes': datos_compras_ajustes,
+            'datos_compras': datos_compras_ajustes + datos_compras,
+            'datos_compras_ajustes': [],
             'sum_compras_credit': sum_compras_credit,
             'sum_total_with_iva': sum_total_with_iva,
             'suma_vat_exempt': suma_vat_exempt,
@@ -2029,7 +1925,6 @@ class PurchaseBook(models.AbstractModel):
 #
 class FiscalBookSaleReport(models.AbstractModel):
     _name = 'report.l10n_ve_full.report_fiscal_sale_book'
-    _description = 'Fiscal Sale Book Report'
 
     @api.model
     def _get_report_values(self, docids, data=None):
@@ -2045,8 +1940,8 @@ class FiscalBookSaleReport(models.AbstractModel):
         # date_start = busq.period_start
         # date_end = busq.period_end
         fbl_obj = self.env['account.fiscal.book.line'].search(
-            [('fb_id', '=', busq.id), ('accounting_date', '>=', date_start),
-             ('accounting_date', '<=', date_end)], order='rank asc')
+            [('fb_id', '=', busq.id), ('accounting_date', '>=', date_start)
+             ], order='rank asc')
 
         docs = []
         docs_ajustes = []

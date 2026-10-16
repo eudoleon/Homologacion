@@ -31,18 +31,38 @@
         <template id="report_fiscal_purchase_book" >
           <t t-call="web.html_container">
             <div class="article">
+                    <style>
+                        .fiscal-book-table td {
+                            text-align: right !important;
+                            vertical-align: middle !important;
+                            padding: 7px 6px !important; /* Ajusta aquí el espaciado horizontal y vertical */
+                            font-size: 10px;
+                            border: 1px solid #000 !important;
+                            white-space: pre-line;
+                        }
+                        .fiscal-book-table th {
+                            text-align: center !important;
+                            vertical-align: middle !important;
+                            padding: 7px 6px !important; /* Ajusta aquí el espaciado horizontal y vertical */
+                            font-size: 10px;
+                            border: 1px solid #000 !important;
+                            white-space: pre-line;
+                        }
+                        .fiscal-book-table th {
+                            font-weight: bold;
+                        }
+                    </style>
                  <div class="page">
                      <t t-foreach="company" t-as="o">
-                        <div class="text-left">
-
-                            <h5 ><b>Nombre de la Empresa:</b> <span t-esc="o.name"/></h5>
-                           <h5><b>RIF.:&amp;nbsp;</b><span t-field="o.partner_id.rif" t-if="o.partner_id.rif"/></h5>
-                            <h5 ><b>Dirección de la Empresa:</b> <span t-esc="street"/><span t-esc="o.street2"/></h5>
+                        <div class="text-left" style="font-size:11px; line-height: 1.2;">
+                            <h5 style="font-size:11px; margin: 2px 0;"><b>Nombre de la Empresa:</b> <span t-esc="o.name"/></h5>
+                            <h5 style="font-size:11px; margin: 2px 0;"><b>RIF.:&#160;</b><span t-field="o.partner_id.rif" t-if="o.partner_id.rif"/></h5>
+                            <h5 style="font-size:11px; margin: 2px 0;"><b>Dirección de la Empresa:</b> <span t-esc="street"/><span t-esc="o.street2"/></h5>
                         </div>
                         <div class="text-center">
-                            <h3><b>LIBRO DE COMPRAS</b></h3>
-                             <h5>Desde: <span t-esc="date_start"></span> &amp;nbsp;Hasta: <span t-esc="date_end"></span></h5>
-                         </div>
+                            <h4 style="font-size:13px; margin: 5px 0;"><b>LIBRO DE COMPRAS</b></h4>
+                            <h5 style="font-size:11px; margin: 2px 0;">Desde: <span t-esc="date_start"></span> &#160;Hasta: <span t-esc="date_end"></span></h5>
+                        </div>
                     </t>
 
 
@@ -58,7 +78,7 @@
                                      style="background-color:#fff5af;color:#000000; border: 1px solid #000000;">Compras
                                      Internas
                                  </th>
-                                 <th colspan="5"
+                                 <th colspan="6"
                                      style="background-color:#fff5af;color:#000000; border: 1px solid #000000;"
                                      class="text-center table-bordered">Compras de Importaciones
                                  </th>
@@ -78,6 +98,9 @@
                                  </th>
                                  <th class="text-center table-bordered"
                                      style="width:450px; vertical-align: middle; border: 1px solid #000000;">Nro. de RIF
+                                 </th>
+                                 <th class="text-center table-bordered"
+                                     style="width:200px; vertical-align: middle; border: 1px solid #000000;">Fecha de Declaración de Aduana
                                  </th>
                                  <th class="text-center table-bordered"
                                      style="width:500px; vertical-align: middle; border: 1px solid #000000;">Nombre ó
@@ -172,6 +195,10 @@
                                  </th>
                                  <th class="text-center table-bordered"
                                      style="width:200px; vertical-align: middle; border: 1px solid #000000;">Nro.
+                                     Declaración de Aduana
+                                 </th>
+                                 <th class="text-center table-bordered"
+                                     style="width:200px; vertical-align: middle; border: 1px solid #000000;">Nro.
                                      Expediente Importación
                                  </th>
                                  <th class="text-center table-bordered"
@@ -224,6 +251,9 @@
                                      <td class="text-center table-bordered"
                                          style=" border: 1px solid #000000; font-size:6px;">
                                          <span t-esc="o['partner_vat']"/><!-- Nro. de Rif-->
+                                     </td>
+                                     <td class="text-center table-bordered" style=" border: 1px solid #000000;">
+                                         <span t-esc="o.get('fecha_declaracion_aduana', '')"/><!-- Fecha de Declaración de Aduana-->
                                      </td>
                                      <td class="text-center table-bordered" style=" border: 1px solid #000000;">
                                          <span t-esc="o['partner_name']"/><!-- Nombre razon social-->
@@ -308,6 +338,11 @@
                                          <p>
                                              <span t-esc="o['nro_planilla']"/>
                                          </p><!-- Nro. Planilla de importación-->
+                                     </td>
+                                     <td class="text-center table-bordered" style=" border: 1px solid #000000;">
+                                         <p>
+                                             <span t-esc="o.get('nro_declaracion_aduana', '')"/>
+                                         </p><!-- Nro. Declaración de Aduana-->
                                      </td>
                                      <td class="text-center table-bordered" style=" border: 1px solid #000000;">
                                          <p>
@@ -629,6 +664,10 @@
                                  </th>
                                  <th class="text-center table-bordered"
                                      style="width:200px; vertical-align: middle; border: 1px solid #000000;">Nro.
+                                     Declaración de Aduana
+                                 </th>
+                                 <th class="text-center table-bordered"
+                                     style="width:200px; vertical-align: middle; border: 1px solid #000000;">Nro.
                                      Expediente Importación
                                  </th>
                                  <th class="text-center table-bordered"
@@ -698,7 +737,7 @@
                                          <!--                                    </t>-->
                                      </td>
                                      <td class="text-center table-bordered" style=" border: 1px solid #000000;">
-                                         <span t-esc="o['ctrl_number']"/><!-- Nro. de control-->
+                                         <span t-esc="o['correlative']"/><!-- Nro. de control-->
                                      </td>
                                      <td class="text-center table-bordered" style=" border: 1px solid #000000;">
                                          <t t-if="o['doc_type'] == 'N/CR'">
@@ -766,6 +805,11 @@
                                          <p>
                                              <span t-esc="o['nro_planilla']"/>
                                          </p><!-- Nro. Planilla de importación-->
+                                     </td>
+                                     <td class="text-center table-bordered" style=" border: 1px solid #000000;">
+                                         <p>
+                                             <span t-esc="o.get('nro_declaracion_aduana', '')"/>
+                                         </p><!-- Nro. Declaración de Aduana-->
                                      </td>
                                      <td class="text-center table-bordered" style=" border: 1px solid #000000;">
                                          <p>

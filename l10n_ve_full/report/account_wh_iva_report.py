@@ -6,7 +6,7 @@ import time
 #from odoo.report import report_sxw
 #from odoo.tools.translate import _
 from odoo import models, api, _
-from odoo.exceptions import UserError, UserError, ValidationError
+from odoo.exceptions import UserError, ValidationError
 
 class IvaReport(models.AbstractModel):
     _name = 'report.l10n_ve_full.template_wh_vat'

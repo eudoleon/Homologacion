@@ -9,21 +9,18 @@ def _ensure_tax_group(env, name):
 
 
 def _ensure_tax(env, company, spec, type_tax_use):
-    target_company = company.root_id if hasattr(company, 'root_id') and company.root_id else company
-    tax_obj = env['account.tax'].with_company(target_company).sudo()
+    tax_obj = env['account.tax'].with_company(company).sudo()
 
-    existing = tax_obj.with_context(active_test=False).search([
-        ('company_id', 'child_of', target_company.id),
+    existing = tax_obj.search([
+        ('company_id', '=', company.id),
         ('type_tax_use', '=', type_tax_use),
         ('name', '=', spec['name']),
     ], limit=1)
     if existing:
-        if not existing.active:
-            existing.active = True
         return existing
 
     group_ref = tax_obj.search([
-        ('company_id', 'child_of', target_company.id),
+        ('company_id', '=', company.id),
         ('type_tax_use', 'in', ['sale', 'purchase', 'none']),
         ('name', '=', spec['group_ref_name']),
     ], limit=1)
@@ -37,7 +34,7 @@ def _ensure_tax(env, company, spec, type_tax_use):
         'amount_type': 'percent',
         'amount': spec['amount'],
         'tax_group_id': tax_group.id,
-        'company_id': target_company.id,
+        'company_id': company.id,
         'active': True,
     }
 

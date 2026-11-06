@@ -224,9 +224,13 @@ class AccountMove(models.Model):
         res = super(AccountMove, self)._compute_date()
         for rec in self:
             if rec.invoice_date and rec.company_id.currency_id_dif and not rec.tax_today_edited:
-                new_rate_ids = self.env.company.currency_id_dif._get_rates(self.env.company, rec.invoice_date)
-                if new_rate_ids:
-                    new_rate = 1 / new_rate_ids[self.env.company.currency_id_dif.id]
+                new_rate = self.env['res.currency']._get_conversion_rate(
+                    from_currency=rec.company_id.currency_id_dif,
+                    to_currency=rec.company_id.currency_id,
+                    company=rec.company_id,
+                    date=rec.invoice_date,
+                )
+                if new_rate:
                     rec.tax_today = round(new_rate, 6)
 
     def _fecha_para_tax_today(self, vals=None):
@@ -303,9 +307,14 @@ class AccountMove(models.Model):
         # Fallback robusto para Odoo 19: usar el motor de tasas por fecha/compañía.
         try:
             fecha_rate = fields.Date.to_date(fecha) if fecha else fields.Date.context_today(self)
-            rates = usd._get_rates(company, fecha_rate)
-            if rates and rates.get(usd.id):
-                return 1 / rates[usd.id]
+            c_rate = self.env['res.currency']._get_conversion_rate(
+                from_currency=usd,
+                to_currency=company.currency_id,
+                company=company,
+                date=fecha_rate,
+            )
+            if c_rate:
+                return c_rate
         except Exception:
             pass
 

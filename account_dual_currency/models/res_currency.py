@@ -229,11 +229,18 @@ class ResCurrency(models.Model):
 
     def get_trm_systray(self):
         company_id = self.env.company
-        rates = company_id.currency_id_dif._get_rates(company_id, date.today())
-        rates = 1 / rates[company_id.currency_id_dif.id]
+        target_currency = getattr(company_id, 'currency_id_dif', False) or self.env.ref('base.USD', raise_if_not_found=False)
+        if not target_currency or not company_id.currency_id:
+            return 0.0
+        rates = self.env['res.currency']._get_conversion_rate(
+            from_currency=target_currency,
+            to_currency=company_id.currency_id,
+            company=company_id,
+            date=date.today(),
+        )
         decimal_dual_currency_rate = self.env['decimal.precision'].precision_get('Dual_Currency_rate')
         if rates:
-            rates = round(rates, decimal_dual_currency_rate if decimal_dual_currency_rate else 2)
+            rates = round(rates, decimal_dual_currency_rate if decimal_dual_currency_rate else 4)
         else:
-            rates = 0
+            rates = 0.0
         return rates

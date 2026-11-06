@@ -27,12 +27,13 @@ class AccountMoveFixTax(models.Model):
             if not date:
                 continue
 
-            rate_dict = CurrencyDif._get_rates(Company, date)
-            if not rate_dict:
-                continue
-
-            new_rate = 1 / rate_dict.get(CurrencyDif.id, 1.0)
-            if new_rate in [0.0, 1.0]:
+            new_rate = self.env['res.currency']._get_conversion_rate(
+                from_currency=CurrencyDif,
+                to_currency=Company.currency_id,
+                company=Company,
+                date=date,
+            )
+            if not new_rate or new_rate in [0.0, 1.0]:
                 continue  # sigue siendo incorrecta, evitar asignarla
 
             _logger.info("[DUAL FIX] Setting tax_today for move=%s from %s -> %s", move.id, move.tax_today, new_rate)

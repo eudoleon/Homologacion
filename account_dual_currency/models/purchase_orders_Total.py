@@ -46,17 +46,18 @@ class PurchaseOrder(models.Model):
             order.amount_ref_tax = tax_amount
             order.amount_ref_total = untaxed + tax_amount
 
-    @api.depends('date_order', 'currency_id')
+    @api.depends('date_order', 'currency_id', 'company_id')
     def _compute_tasa_bcv(self):
+        currency_usd = self.env.ref('base.USD', raise_if_not_found=False)
         for order in self:
-            # Buscamos la moneda USD
-            currency_usd = self.env.ref('base.USD')
             if order.date_order and currency_usd:
-                # Obtenemos la tasa para la fecha de la orden
-                # Odoo almacena las tasas como el factor inverso, por eso usamos 1/tasa
-                rates = currency_usd._get_rates(order.company_id, order.date_order)
-                tasa = rates.get(currency_usd.id)
-                order.tasa_bcv = 1.0 / tasa if tasa else 1.0
+                target_curr = order.currency_id if order.currency_id.name == 'VEF' else order.company_id.currency_id
+                order.tasa_bcv = self.env['res.currency']._get_conversion_rate(
+                    from_currency=currency_usd,
+                    to_currency=target_curr,
+                    company=order.company_id or self.env.company,
+                    date=order.date_order,
+                )
             else:
                 order.tasa_bcv = 1.0
 

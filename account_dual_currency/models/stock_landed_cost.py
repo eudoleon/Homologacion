@@ -94,21 +94,23 @@ class StockLandedCost(models.Model):
             )
 
             for product in products:
+                qty = product.quantity_svl if hasattr(product, 'quantity_svl') else product.qty_available
                 if not float_is_zero(
-                    product.quantity_svl,
+                    qty,
                     precision_rounding=product.uom_id.rounding
                 ):
                     product.with_company(cost.company_id).sudo().with_context(
                         disable_auto_svl=True
                     ).standard_price_usd += (
-                        cost_to_add_byproduct_usd[product] / product.quantity_svl
+                        cost_to_add_byproduct_usd[product] / qty
                     )
 
             # -------------------------------------------------
             # AJUSTAR ASIENTOS CONTABLES USD
             # -------------------------------------------------
 
-            for move in cost.move_ids.filtered(lambda m: m.state == 'posted'):
+            moves = (cost.account_move_id | cost.move_ids).filtered(lambda m: m.state == 'posted')
+            for move in moves:
                 for line in move.line_ids:
                     # Campo personalizado asumido: amount_currency_usd
                     if hasattr(line, 'amount_currency_usd'):

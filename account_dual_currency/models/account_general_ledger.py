@@ -344,7 +344,17 @@ class GeneralLedgerCustomHandler(models.AbstractModel):
         tables, where_clause, where_params = report._query_get(options, effective_scope)
 
         if current_groupby == 'id_with_accumulated_balance':
-            aml_ids = [k[1] for k, _ in res if isinstance(k, (list, tuple)) and len(k) > 1 and k[1]]
+            def _extract_aml_id(k):
+                if isinstance(k, str):
+                    try:
+                        k = json.loads(k)
+                    except Exception:
+                        return None
+                if isinstance(k, (list, tuple)) and len(k) > 1 and k[1]:
+                    return k[1]
+                return None
+
+            aml_ids = [aid for aid in (_extract_aml_id(k) for k, _ in res) if aid]
             if not aml_ids:
                 return res
             query = """
@@ -359,7 +369,7 @@ class GeneralLedgerCustomHandler(models.AbstractModel):
             self._cr.execute(query, [tuple(aml_ids)])
             usd_by_id = {row['aml_id']: row for row in self._cr.dictfetchall()}
             for key, vals in res:
-                aml_id = key[1] if isinstance(key, (list, tuple)) and len(key) > 1 else None
+                aml_id = _extract_aml_id(key)
                 row = usd_by_id.get(aml_id)
                 if row:
                     vals['debit'] = row['debit']

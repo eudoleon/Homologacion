@@ -441,6 +441,7 @@ class AccountPaymentRegister(models.TransientModel):
         ctx.update({
             'tasa_factura': self.tax_today,
             'calcular_dual_currency': True,
+            'no_exchange_difference': True,
         })
 
         # Dejamos que Odoo use sus lines_to_reconcile por defecto para que genere el move_id

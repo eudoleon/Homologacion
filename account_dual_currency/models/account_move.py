@@ -720,6 +720,14 @@ class AccountMove(models.Model):
         super(AccountMove, self)._compute_amount()
         
         for move in self:
+            if move.is_invoice(include_receipts=True):
+                sign = -1 if move.move_type in ('out_refund', 'in_refund') else 1
+                if move.currency_id and move.currency_id != move.company_currency_id and move.tax_today > 0:
+                    base_bs = move.amount_untaxed * move.tax_today
+                else:
+                    base_bs = move.amount_untaxed_bs or move.amount_untaxed
+                move.amount_untaxed_in_currency_signed = (base_bs or 0.0) * sign
+                move.amount_untaxed_signed = (base_bs or 0.0) * sign
             # COMENTADO ODOO 19: No se puede asignar directamente el contexto
             # self.env.context = dict(self.env.context, tasa_factura=move.tax_today, calcular_dual_currency=True)
             total_residual = 0.0

@@ -153,13 +153,13 @@ class AccountPaymentRegister(models.TransientModel):
                 paid_bs = pay_cur._convert(float(w.amount or 0.0), company_cur, company, date_ctx)
                 paid_usd = round((paid_bs / tax_today) if tax_today else 0.0, 2)
 
-            # --- Residual USD de las facturas del wizard (código sin cambios) ---
+            # --- Residual USD de las facturas del wizard ---
             residual_usd = 0.0
             for inv in w.line_ids.mapped('move_id'):
                 if hasattr(inv, 'amount_residual_usd') and inv.amount_residual_usd:
-                    residual_usd += float(inv.amount_residual_usd)
+                    residual_usd += abs(float(inv.amount_residual_usd))
                 else:
-                    residual_usd += round((float(inv.amount_residual or 0.0) / tax_inv) if tax_inv else 0.0, 2)
+                    residual_usd += abs(round((float(inv.amount_residual or 0.0) / tax_inv) if tax_inv else 0.0, 2))
 
             used_usd = round(min(paid_usd, residual_usd) if residual_usd else 0.0, 2)
 

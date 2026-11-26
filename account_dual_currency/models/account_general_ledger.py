@@ -343,7 +343,33 @@ class GeneralLedgerCustomHandler(models.AbstractModel):
         effective_scope = 'from_beginning' if options.get('trial_balance_column_type') == 'end_balance' else date_scope
         tables, where_clause, where_params = report._query_get(options, effective_scope)
 
-        if current_groupby:
+        if current_groupby == 'id_with_accumulated_balance':
+            aml_ids = [k[1] for k, _ in res if isinstance(k, (list, tuple)) and len(k) > 1 and k[1]]
+            if not aml_ids:
+                return res
+            query = """
+                SELECT
+                    account_move_line.id                                  AS aml_id,
+                    COALESCE(ROUND(account_move_line.debit_usd, 2), 0.0)  AS debit,
+                    COALESCE(ROUND(account_move_line.credit_usd, 2), 0.0) AS credit,
+                    COALESCE(ROUND(account_move_line.balance_usd, 2), 0.0) AS balance
+                FROM account_move_line
+                WHERE account_move_line.id IN %s
+            """
+            self._cr.execute(query, [tuple(aml_ids)])
+            usd_by_id = {row['aml_id']: row for row in self._cr.dictfetchall()}
+            for key, vals in res:
+                aml_id = key[1] if isinstance(key, (list, tuple)) and len(key) > 1 else None
+                row = usd_by_id.get(aml_id)
+                if row:
+                    vals['debit'] = row['debit']
+                    vals['credit'] = row['credit']
+                    vals['balance'] = row['balance']
+                elif aml_id:
+                    vals['debit'] = 0.0
+                    vals['credit'] = 0.0
+                    vals['balance'] = 0.0
+        elif current_groupby:
             if current_groupby not in self.env['account.move.line']._fields:
                 return res
             keys = [k for k, _ in res if k is not None]

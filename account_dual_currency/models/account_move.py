@@ -1182,7 +1182,10 @@ class AccountMove(models.Model):
             debit_move_id._compute_amount_residual_usd()
         if credit_move_id:
             credit_move_id._compute_amount_residual_usd()
+        self.env.flush_all()
+        self.invalidate_recordset(['matched_payment_ids', 'payment_state', 'amount_residual', 'amount_residual_signed'])
         self._compute_payment_state()
+        self.env.flush_all()
         return res
 
     def generar_retencion_igtf(self):

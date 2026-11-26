@@ -413,7 +413,7 @@ class AccountPaymentRegister(models.TransientModel):
 
                 if len(group) == 2 and round(sum(l.balance for l in group), 2) == 0.0:
                     try:
-                        group.reconcile()
+                        group.with_context(no_exchange_difference=True).reconcile()
                         _logger.info(
                             "[AUTO-RECON] Pago %s conciliado con DIF en cuenta %s",
                             payment.id, account.code
@@ -635,7 +635,7 @@ class AccountPaymentRegister(models.TransientModel):
                 )
                 if len(lines_group) >= 2:
                     try:
-                        lines_group.reconcile()
+                        lines_group.with_context(no_exchange_difference=True).reconcile()
                         _logger.info(
                             "[PAY-DBG] CONCILIACIÓN FINAL EXITOSA Pago↔Factura en cuenta %s (%s líneas).",
                             account.code,

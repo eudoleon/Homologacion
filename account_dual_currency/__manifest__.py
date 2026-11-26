@@ -3,7 +3,7 @@
     'name': "Venezuela: Account Dual Currency",
     'category': 'Account',
     'license': 'Other proprietary',
-    'version': '19.0.0.0',
+    'version': '19.0.0.1',
     'summary': """Esta aplicación permite manejar dualidad de moneda en Contabilidad.""",
     'author': 'Aecas',
     'company': 'Aecas',

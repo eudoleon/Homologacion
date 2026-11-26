@@ -114,11 +114,15 @@ class AccountMove(models.Model):
     amount_residual_bs = fields.Monetary(
         currency_field='company_currency_id',
         string='Adeudado Bs.',
-        compute='_compute_amount',
+        compute='_compute_amount_residual_bs',
         readonly=True,
-        store=True,
-        copy=False,
+        store=False,
     )
+
+    @api.depends('amount_residual_signed', 'move_type')
+    def _compute_amount_residual_bs(self):
+        for move in self:
+            move.amount_residual_bs = abs(move.amount_residual_signed) if move.is_invoice(include_receipts=True) else 0.0
 
     invoice_payments_widget_bs = fields.Binary(
         groups="account.group_account_invoice,account.group_account_readonly",
@@ -742,7 +746,6 @@ class AccountMove(models.Model):
                         total += line.balance
             move.amount_residual_usd = total_residual
             move.amount_total_signed_usd = abs(total) if move.move_type == 'entry' else -total
-            move.amount_residual_bs = abs(move.amount_residual_signed) if move.is_invoice(include_receipts=True) else 0.0
         # COMENTADO ODOO 19: No se puede asignar directamente el contexto
         # self.env.context = dict(self.env.context, tasa_factura=None, calcular_dual_currency=False)
     

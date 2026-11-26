@@ -4,14 +4,25 @@ class SaleOrder(models.Model):
     _inherit = 'sale.order'
 
     currency_id_ref = fields.Many2one(
-        'res.currency', 
-        string="Moneda Referencia", 
-        default=lambda self: self.env.ref('base.USD')
+        'res.currency',
+        string="Moneda Referencia",
+        compute='_compute_currency_id_ref',
+        store=True,
     )
 
-    amount_ref_untaxed = fields.Monetary(string="Subtotal (USD)", compute='_compute_ref_totals', currency_field='currency_id_ref', store=True)
-    amount_ref_tax = fields.Monetary(string="Impuestos (USD)", compute='_compute_ref_totals', currency_field='currency_id_ref', store=True)
-    amount_ref_total = fields.Monetary(string="Total (USD)", compute='_compute_ref_totals', currency_field='currency_id_ref', store=True)
+    amount_ref_untaxed = fields.Monetary(string="Subtotal (Ref.)", compute='_compute_ref_totals', currency_field='currency_id_ref', store=True)
+    amount_ref_tax = fields.Monetary(string="Impuestos (Ref.)", compute='_compute_ref_totals', currency_field='currency_id_ref', store=True)
+    amount_ref_total = fields.Monetary(string="Total (Ref.)", compute='_compute_ref_totals', currency_field='currency_id_ref', store=True)
+
+    @api.depends('currency_id', 'company_id.currency_id')
+    def _compute_currency_id_ref(self):
+        usd = self.env.ref('base.USD', raise_if_not_found=False)
+        for order in self:
+            comp_cur = order.company_id.currency_id
+            if order.currency_id == comp_cur:
+                order.currency_id_ref = usd
+            else:
+                order.currency_id_ref = comp_cur
 
     @api.depends('order_line.ref', 'order_line.tax_ids')
     def _compute_ref_totals(self):

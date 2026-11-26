@@ -19,23 +19,31 @@ class AccountBankStatementLine(models.Model):
         for rec in self:
             rec._get_default_tasa()
 
+    def _get_conversion_tasa(self, company=False, fecha=False, ref_cur=False):
+        """Obtiene la tasa de conversión oficial (VEF por unidad de divisa) sin invertir."""
+        company = company or self.env.company
+        fecha = fecha or fields.Date.context_today(self)
+        ref_cur = ref_cur or company.currency_id_dif or self.env.ref('base.USD', raise_if_not_found=False)
+        if not ref_cur or not company.currency_id:
+            return 1.0
+        rate = self.env['res.currency']._get_conversion_rate(
+            from_currency=ref_cur,
+            to_currency=company.currency_id,
+            company=company,
+            date=fecha,
+        )
+        return rate or ref_cur.inverse_rate or 1.0
+
     def _get_default_tasa(self):
+        if not self:
+            return self._get_conversion_tasa()
+        tasa_referencia_statement = 0.0
         for rec in self:
-            tasa_referencia_statement = 0
-            if rec.date:
-                domain = [('name', '=', rec.date), ('currency_id', '=', rec.currency_id_dif_statement.id),
-                          ('company_id', '=', self.env.company.id)]
-                # #print(domain)
-                tasa_fecha = self.env['res.currency.rate'].search(domain)
-                if tasa_fecha:
-                    tasa_referencia_statement = tasa_fecha.inverse_company_rate
-                else:
-                    tasa_referencia_statement = self.env.company.currency_id_dif.rate
-            else:
-                tasa_referencia_statement = self.env.company.currency_id_dif.rate
-            #print(' obteniendo la tasa ', tasa_referencia_statement)
+            company = rec.company_id or self.env.company
+            ref_cur = rec.currency_id_dif_statement or company.currency_id_dif
+            tasa_referencia_statement = rec._get_conversion_tasa(company=company, fecha=rec.date, ref_cur=ref_cur)
             rec.tasa_referencia_statement = tasa_referencia_statement
-            return tasa_referencia_statement
+        return tasa_referencia_statement
 
     @api.depends('tasa_referencia_statement', 'amount', 'currency_id_dif_statement', 'statement_id.currency_id_journal')
     def _amount_usd(self):
@@ -49,17 +57,23 @@ class AccountBankStatementLine(models.Model):
     @api.model_create_multi
     def create(self, vals_list):
         # OVERRIDE
-        tasa = self._get_default_tasa()
         for vals in vals_list:
-            if not tasa:
-                if 'journal_id' in vals:
-                    journal = self.env['account.journal'].browse(vals['journal_id'])
-                    tasa = journal.company_id.currency_id_dif.rate
-            if 'tasa_referencia_statement' not in vals:
-                vals['tasa_referencia_statement'] = tasa
-            if not vals['tasa_referencia_statement']:
-                vals['tasa_referencia_statement'] = tasa
-            vals['tax_today'] = vals['tasa_referencia_statement']
+            company = self.env.company
+            ref_cur = company.currency_id_dif
+            if 'journal_id' in vals and vals['journal_id']:
+                journal = self.env['account.journal'].browse(vals['journal_id'])
+                company = journal.company_id or company
+                ref_cur = company.currency_id_dif
+            if 'currency_id_dif_statement' in vals and vals['currency_id_dif_statement']:
+                ref_cur = self.env['res.currency'].browse(vals['currency_id_dif_statement'])
+            line_date = vals.get('date') or fields.Date.context_today(self)
+            tasa = vals.get('tasa_referencia_statement') or self._get_conversion_tasa(
+                company=company,
+                fecha=line_date,
+                ref_cur=ref_cur,
+            )
+            vals['tasa_referencia_statement'] = tasa
+            vals['tax_today'] = tasa
         st_lines = super(AccountBankStatementLine, self).create(vals_list)
         return st_lines
 
@@ -117,8 +131,8 @@ class AccountBankStatementLine(models.Model):
             balance = self.amount
         balance_usd = self.amount_usd_statement
         if balance_usd == 0:
-            balance_usd = balance / (
-                self.tasa_referencia_statement if self.tasa_referencia_statement else self._get_default_tasa())
+            tasa_ref = self.tasa_referencia_statement or self._get_default_tasa()
+            balance_usd = (balance / tasa_ref) if tasa_ref else 0.0
         # self.move_id.tax_today = self.tasa_referencia_statement if self.tasa_referencia_statement == 0 else self._get_default_tasa()
         valores = {
             'name': self.payment_ref,
@@ -238,8 +252,8 @@ class AccountBankStatementLine(models.Model):
             currency_id = company_currency.id
         balance_usd = amount_residual_usd
         if balance_usd == 0:
-            balance_usd = balance / (
-                self.tasa_referencia_statement if self.tasa_referencia_statement else self._get_default_tasa())
+            tasa_ref = self.tasa_referencia_statement or self._get_default_tasa()
+            balance_usd = (balance / tasa_ref) if tasa_ref else 0.0
         # self.move_id.tax_today = self.tasa_referencia_statement if self.tasa_referencia_statement == 0 else self._get_default_tasa()
         valores = {
             **counterpart_vals,

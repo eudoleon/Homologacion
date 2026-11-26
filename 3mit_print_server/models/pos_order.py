@@ -163,14 +163,17 @@ class PosOrder(models.Model):
 
     def _prepare_invoice_vals(self):
         res = super(PosOrder, self)._prepare_invoice_vals()
-        if self.igtf_amount >= 0:
-            line = self._prepare_igtf_invoice_line()
-            inv_lines = res.get('invoice_line_ids')
-            inv_lines.append((0, None, line))
-            res.update({
-                'invoice_line_ids': inv_lines,
-                'pos_order_id': self.id,
-            })
+        if self.igtf_amount and self.igtf_amount > 0:
+            inv_lines = list(res.get('invoice_line_ids') or [])
+            existing_igtf_line = any(
+                (line and len(line) > 2 and isinstance(line[2], dict) and line[2].get('name') == 'IGTF')
+                for line in inv_lines
+            )
+            if not existing_igtf_line:
+                line = self._prepare_igtf_invoice_line()
+                inv_lines.append((0, None, line))
+                res['invoice_line_ids'] = inv_lines
+        res['pos_order_id'] = self.id
         return res
 
     def print_NC(self):

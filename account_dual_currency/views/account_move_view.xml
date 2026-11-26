@@ -65,6 +65,7 @@
                     <field name="amount_tax_bs" readonly="1" force_save="1" widget='monetary' options="{'currency_field': 'company_currency_id'}" invisible="state == 'draft'"/>
                     <field name="amount_total_bs" readonly="1" force_save="1" class="oe_subtotal_footer_separator" widget='monetary' options="{'currency_field': 'company_currency_id'}" invisible="state == 'draft'"/>
                     <field name="invoice_payments_widget_bs" colspan="2" nolabel="1" widget="payment"/>
+                    <field name="amount_residual_bs" readonly="1" force_save="1" class="oe_subtotal_footer_separator" widget='monetary' options="{'currency_field': 'company_currency_id'}" invisible="state == 'draft'"/>
                 </group>
             </xpath>
             <xpath expr="//field[@name='invoice_outstanding_credits_debits_widget']" position="before">

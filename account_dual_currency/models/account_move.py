@@ -30,11 +30,12 @@ class AccountMove(models.Model):
         help="Base imponible en moneda local, con signo según el tipo de documento (positivo para facturas, negativo para reembolsos/NC)."
     )
 
-    @api.depends('amount_untaxed', 'move_type')
+    @api.depends('amount_untaxed_bs', 'amount_untaxed', 'move_type')
     def _compute_amount_untaxed_in_currency_signed(self):
         for move in self:
             sign = -1 if move.move_type in ('out_refund', 'in_refund') else 1
-            move.amount_untaxed_in_currency_signed = abs(move.amount_untaxed) if move.move_type == 'entry' else -(sign * move.amount_untaxed)
+            base_bs = move.amount_untaxed_bs if move.is_invoice(include_receipts=True) else move.amount_untaxed
+            move.amount_untaxed_in_currency_signed = abs(base_bs or 0.0) if move.move_type == 'entry' else (base_bs or 0.0) * sign
 
     
     amount_untaxed_signed = fields.Monetary(
@@ -110,7 +111,20 @@ class AccountMove(models.Model):
         currency_field='currency_id_dif', copy=False
     )
 
-    invoice_payments_widget_bs = fields.Binary(groups="account.group_account_invoice", copy=False)
+    amount_residual_bs = fields.Monetary(
+        currency_field='company_currency_id',
+        string='Adeudado Bs.',
+        compute='_compute_amount',
+        readonly=True,
+        store=True,
+        copy=False,
+    )
+
+    invoice_payments_widget_bs = fields.Binary(
+        groups="account.group_account_invoice,account.group_account_readonly",
+        compute='_compute_payments_widget_reconciled_info_bs',
+        copy=False,
+    )
 
     same_currency = fields.Boolean(string="Mismo tipo de moneda", compute='_same_currency')
 
@@ -445,14 +459,16 @@ class AccountMove(models.Model):
         # de campos que Odoo prohíbe modificar. Esto evita que errores de caché o de 
         # herencia inyecten campos como 'partner_id'.
         if any(m.state == 'posted' for m in self) and not self.env.context.get('skip_readonly_check'):
-            # Lista de campos críticos que disparan el error en estado publicado
-            fields_to_remove = ['partner_id', 'journal_id', 'date', 'move_type', 'line_ids']
-            for field in fields_to_remove:
-                vals.pop(field, None)
-                
-            # Si después de limpiar ya no hay nada que escribir, retornamos éxito
-            if not vals:
-                return True
+            # No bloquear escritura en asientos de extracto bancario (conciliación bancaria v19).
+            if not any(m.statement_line_id for m in self):
+                # Lista de campos críticos que disparan el error en estado publicado
+                fields_to_remove = ['partner_id', 'journal_id', 'date', 'move_type']
+                for field in fields_to_remove:
+                    vals.pop(field, None)
+
+                # Si después de limpiar ya no hay nada que escribir, retornamos éxito
+                if not vals:
+                    return True
         # -----------------------------------------------------------------------
 
         _logger.debug("[DUAL] Entering AccountMove.write on %s with vals=%s", self.ids, vals)
@@ -726,6 +742,7 @@ class AccountMove(models.Model):
                         total += line.balance
             move.amount_residual_usd = total_residual
             move.amount_total_signed_usd = abs(total) if move.move_type == 'entry' else -total
+            move.amount_residual_bs = abs(move.amount_residual_signed) if move.is_invoice(include_receipts=True) else 0.0
         # COMENTADO ODOO 19: No se puede asignar directamente el contexto
         # self.env.context = dict(self.env.context, tasa_factura=None, calcular_dual_currency=False)
     
@@ -867,39 +884,32 @@ class AccountMove(models.Model):
                 move.amount_residual_usd = move.amount_total_usd
                 move.invoice_payments_widget_usd = False
 
-    @api.depends('move_type', 'line_ids.amount_residual_usd')
+    @api.depends('move_type', 'state', 'line_ids.amount_residual', 'line_ids.matched_debit_ids', 'line_ids.matched_credit_ids')
     def _compute_payments_widget_reconciled_info_bs(self):
         for move in self:
             if move.state != 'posted' or not move.is_invoice(include_receipts=True):
-                move.invoice_payments_widget_bs = json.dumps(False)
+                move.invoice_payments_widget_bs = False
                 continue
             reconciled_vals = move._get_reconciled_info_JSON_values_bs()
             if reconciled_vals:
-                info = {
+                move.invoice_payments_widget_bs = {
                     'title': _('Less Payment'),
                     'outstanding': False,
                     'content': reconciled_vals,
                 }
-                move.invoice_payments_widget_bs = json.dumps(info, default=date_utils.json_default)
             else:
-                move.invoice_payments_widget_bs = json.dumps(False)
+                move.invoice_payments_widget_bs = False
 
     def _get_reconciled_info_JSON_values_bs(self):
         self.ensure_one()
-        foreign_currency = self.currency_id if self.currency_id != self.company_id.currency_id else False
-
         reconciled_vals = []
         pay_term_line_ids = self.line_ids.filtered(lambda line: line.account_id.account_type in ('asset_receivable', 'liability_payable'))
         partials = pay_term_line_ids.mapped('matched_debit_ids') + pay_term_line_ids.mapped('matched_credit_ids')
         for partial in partials:
             counterpart_lines = partial.debit_move_id + partial.credit_move_id
-
-            counterpart_line = counterpart_lines.filtered(lambda line: line not in self.line_ids)
-
-            if counterpart_line.credit > 0:
-                amount = counterpart_line.credit
-            else:
-                amount = counterpart_line.debit
+            counterpart_line = counterpart_lines.filtered(lambda line: line not in self.line_ids)[:1]
+            if not counterpart_line:
+                continue
 
             ref = counterpart_line.move_id.name
             if counterpart_line.move_id.ref:
@@ -909,17 +919,15 @@ class AccountMove(models.Model):
                 'name': counterpart_line.name,
                 'journal_name': counterpart_line.journal_id.name,
                 'amount': partial.amount,
-                'currency': self.currency_id_dif.symbol,
-                'digits': [69, 2],
-                'position': self.currency_id_dif.position,
+                'currency_id': self.company_id.currency_id.id,
                 'date': counterpart_line.date,
-                'payment_id': counterpart_line.id,
+                'partial_id': partial.id,
                 'account_payment_id': counterpart_line.payment_id.id,
-                'payment_method_name': counterpart_line.payment_id.payment_method_id.name if counterpart_line.journal_id.type == 'bank' else None,
+                'payment_method_name': counterpart_line.payment_id.payment_method_line_id.name if counterpart_line.payment_id else None,
                 'move_id': counterpart_line.move_id.id,
                 'ref': ref,
+                'is_exchange': False,
             })
-        # ##print(reconciled_vals)
         return reconciled_vals
 
     def _get_all_reconciled_invoice_partials_USD(self):
@@ -1158,11 +1166,13 @@ class AccountMove(models.Model):
         partial = self.env['account.partial.reconcile'].browse(partial_id)
         debit_move_id = partial.debit_move_id
         credit_move_id = partial.credit_move_id
-        partial.unlink()
-        if debit_move_id and credit_move_id:
+        res = super(AccountMove, self).js_remove_outstanding_partial(partial_id)
+        if debit_move_id:
             debit_move_id._compute_amount_residual_usd()
+        if credit_move_id:
             credit_move_id._compute_amount_residual_usd()
-        return True
+        self._compute_payment_state()
+        return res
 
     def generar_retencion_igtf(self):
         for rec in self:

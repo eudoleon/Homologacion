@@ -5,11 +5,7 @@ class PurchaseOrderLine(models.Model):
 
     def _prepare_account_move_line(self, move=False):
         self.ensure_one()
-
-        account = (
-            self.product_id.property_account_expense_id or
-            self.product_id.categ_id.property_account_expense_categ_id
-        )
+        res = super()._prepare_account_move_line(move=move)
 
         company = self.order_id.company_id or self.env.company
         currency = self.currency_id or company.currency_id
@@ -30,15 +26,9 @@ class PurchaseOrderLine(models.Model):
         else:
             amount_converted = amount
 
-        return {
-            'name': self.name,
-            'product_id': self.product_id.id,
+        res.update({
             'price_unit': price_unit,
             'quantity': quantity,
-            'product_uom_id': self.product_uom_id.id,
-            'tax_ids': [(6, 0, self.tax_ids.ids)],
-            'purchase_line_id': self.id,
-            'display_type': self.display_type or None,
-            'account_id': account.id if account else False,
             'balance': amount_converted,
-        }
+        })
+        return res

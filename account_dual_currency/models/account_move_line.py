@@ -106,9 +106,17 @@ class AccountMoveLine(models.Model):
             return rate
 
         for line in self:
-            # COMENTADO ODOO 19: No se puede asignar directamente el contexto
-            # self.env.context = dict(self.env.context, tasa_factura=line.move_id.tax_today, calcular_dual_currency=True)
-            line.currency_rate = 1 / line.move_id.tax_today if line.move_id.tax_today > 0 else 1
+            if not line.currency_id or line.currency_id == line.company_currency_id:
+                line.currency_rate = 1.0
+            elif line.move_id.currency_id_dif and line.currency_id == line.move_id.currency_id_dif and line.move_id.tax_today > 0:
+                line.currency_rate = 1.0 / line.move_id.tax_today
+            else:
+                line.currency_rate = get_rate(
+                    from_currency=line.company_currency_id,
+                    to_currency=line.currency_id,
+                    company=line.company_id or self.env.company,
+                    date=line.move_id.date or fields.Date.context_today(line),
+                )
             _logger.debug("[DUAL LINE] _compute_currency_rate line=%s move=%s tax_today=%s currency_rate=%s", line.id, line.move_id and line.move_id.id or None, line.move_id.tax_today, line.currency_rate)
             
         # COMENTADO ODOO 19: No se puede asignar directamente el contexto
@@ -304,7 +312,6 @@ class AccountMoveLine(models.Model):
             # Si el move tiene show_usd=False, forzar amount_residual_usd a 0
             if line.move_id and not line.move_id.show_usd:
                 line.amount_residual_usd = 0.0
-                line.reconciled = False
                 continue
 
             if line.id and (line.account_id.reconcile or line.account_id.account_type in ('asset_cash', 'liability_credit_card')):
@@ -312,11 +319,8 @@ class AccountMoveLine(models.Model):
                                    - sum(line.matched_debit_ids.mapped('amount_usd'))
 
                 line.amount_residual_usd = (line.debit_usd - line.credit_usd) - reconciled_balance
-
-                line.reconciled = (line.amount_residual_usd == 0)
             else:
                 line.amount_residual_usd = 0.0
-                line.reconciled = False
 
 
     @api.model
@@ -367,6 +371,8 @@ class AccountMoveLine(models.Model):
             plan['partials'] = partials[start_range:start_range + size]
             start_range += size
 
+        for diff_vals in exchange_diff_values_list:
+            diff_vals.setdefault('to_post', True)
         exchange_moves = self._create_exchange_difference_moves(exchange_diff_values_list)
         # for index, exchange_move in zip(exchange_diff_partial_index, exchange_moves):
         #     partials[index].exchange_move_id = exchange_move
@@ -450,10 +456,13 @@ class AccountMoveLine(models.Model):
                         exchange_diff_values)
 
                 if exchange_diff_values['move_values']['line_ids']:
+                    exchange_diff_values.setdefault('to_post', True)
                     exchange_diff_full_batch_index.append(fulL_batch_index)
                     exchange_diff_values_list.append(exchange_diff_values)
                     full_batch['caba_lines_to_reconcile'] = caba_lines_to_reconcile
 
+        for diff_vals in exchange_diff_values_list:
+            diff_vals.setdefault('to_post', True)
         exchange_moves = self._create_exchange_difference_moves(exchange_diff_values_list)
         for fulL_batch_index, exchange_move in zip(exchange_diff_full_batch_index, exchange_moves):
             full_batch = full_batches[fulL_batch_index]

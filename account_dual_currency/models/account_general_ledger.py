@@ -326,3 +326,87 @@ class GeneralLedgerCustomHandler(models.AbstractModel):
             account.id: (account, init_balance_by_col_group[account.id])
             for account in accounts
         }
+
+    def _is_secondary_currency_report(self, options):
+        currency_dif = (options.get('currency_dif') or '').strip()
+        if currency_dif.lower().startswith('en '):
+            currency_dif = currency_dif[3:].strip()
+        company_currency_name = options.get('currency_id_company_name', self.env.company.currency_id.symbol)
+        return bool(currency_dif and currency_dif != company_currency_name)
+
+    def _apply_usd_amounts_to_custom_engine_result(self, res, options, date_scope, current_groupby):
+        """Reemplaza debit, credit y balance por las columnas *_usd cuando el reporte está en divisa."""
+        if not res or not self._is_secondary_currency_report(options):
+            return res
+
+        report = self.env['account.report'].browse(options['report_id'])
+        effective_scope = 'from_beginning' if options.get('trial_balance_column_type') == 'end_balance' else date_scope
+        tables, where_clause, where_params = report._query_get(options, effective_scope)
+
+        if current_groupby:
+            if current_groupby not in self.env['account.move.line']._fields:
+                return res
+            keys = [k for k, _ in res if k is not None]
+            if not keys:
+                return res
+            query = f"""
+                SELECT
+                    account_move_line.{current_groupby}                     AS groupby_key,
+                    COALESCE(SUM(ROUND(account_move_line.debit_usd, 2)), 0.0)   AS debit,
+                    COALESCE(SUM(ROUND(account_move_line.credit_usd, 2)), 0.0)  AS credit,
+                    COALESCE(SUM(ROUND(account_move_line.balance_usd, 2)), 0.0) AS balance
+                FROM {tables}
+                WHERE {where_clause}
+                  AND account_move_line.{current_groupby} IN %s
+                GROUP BY account_move_line.{current_groupby}
+            """
+            self._cr.execute(query, list(where_params) + [tuple(keys)])
+            usd_by_key = {row['groupby_key']: row for row in self._cr.dictfetchall()}
+            for key, vals in res:
+                row = usd_by_key.get(key)
+                if row:
+                    vals['debit'] = row['debit']
+                    vals['credit'] = row['credit']
+                    vals['balance'] = row['balance']
+                else:
+                    vals['debit'] = 0.0
+                    vals['credit'] = 0.0
+                    vals['balance'] = 0.0
+        else:
+            query = f"""
+                SELECT
+                    COALESCE(SUM(ROUND(account_move_line.debit_usd, 2)), 0.0)   AS debit,
+                    COALESCE(SUM(ROUND(account_move_line.credit_usd, 2)), 0.0)  AS credit,
+                    COALESCE(SUM(ROUND(account_move_line.balance_usd, 2)), 0.0) AS balance
+                FROM {tables}
+                WHERE {where_clause}
+            """
+            self._cr.execute(query, list(where_params))
+            row = self._cr.dictfetchone()
+            if row and isinstance(res, dict):
+                res['debit'] = row['debit']
+                res['credit'] = row['credit']
+                res['balance'] = row['balance']
+        return res
+
+    def _report_custom_engine_general_ledger(self, expressions, options, date_scope, current_groupby, next_groupby, offset=0, limit=None, warnings=None):
+        res = super()._report_custom_engine_general_ledger(
+            expressions, options, date_scope, current_groupby, next_groupby,
+            offset=offset, limit=limit, warnings=warnings,
+        )
+        return self.env['account.general.ledger.report.handler']._apply_usd_amounts_to_custom_engine_result(
+            res, options, date_scope, current_groupby,
+        )
+
+
+class TrialBalanceCustomHandler(models.AbstractModel):
+    _inherit = 'account.trial.balance.report.handler'
+
+    def _report_custom_engine_trial_balance(self, expressions, options, date_scope, current_groupby, next_groupby, offset=0, limit=None, warnings=None):
+        res = super()._report_custom_engine_trial_balance(
+            expressions, options, date_scope, current_groupby, next_groupby,
+            offset=offset, limit=limit, warnings=warnings,
+        )
+        return self.env['account.general.ledger.report.handler']._apply_usd_amounts_to_custom_engine_result(
+            res, options, date_scope, current_groupby,
+        )

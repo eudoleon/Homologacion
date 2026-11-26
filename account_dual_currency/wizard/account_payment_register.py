@@ -63,7 +63,7 @@ class AccountPaymentRegister(models.TransientModel):
         readonly=True, store=True, compute='_compute_dual_expected_diff'
     )
     amount_expected = fields.Monetary(
-        string="Importe Esperado", currency_field='currency_id',
+        string="Importe Esperado", currency_field='company_currency_id',
         readonly=True, store=True, compute='_compute_dual_expected_diff',
         help="Importe en Divisa * Tasa Factura"
     )
